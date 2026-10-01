@@ -1,0 +1,38 @@
+{
+  "name": "@zensink/webui",
+  "version": "0.1.0",
+  "description": "Web console for the zens-ink SEO toolkit \u2014 the same pure-Python engine as the CLI, now with buttons. Zero npm dependencies.",
+  "license": "MIT",
+  "homepage": "https://zens.ink",
+  "bin": {
+    "zensink-webui": "bin/zensink-webui.js"
+  },
+  "files": [
+    "bin",
+    "server.py",
+    "_pro_runner.py",
+    "index.html",
+    "sample-dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=14"
+  },
+  "keywords": [
+    "seo",
+    "seo-tools",
+    "keyword-research",
+    "site-audit",
+    "geo",
+    "webui",
+    "zensink"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ZensInk/webui.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ZensInk/webui/issues"
+  }
+}

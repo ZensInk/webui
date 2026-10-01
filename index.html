@@ -1,0 +1,2167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ZensInk WebUI · SEO Toolkit Console</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<meta name="description" content="ZensInk WebUI · the zens-ink SEO toolkit as a web console. Live engine, zero dependencies.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 120'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop offset='0' stop-color='%23a78bfa'/%3E%3Cstop offset='1' stop-color='%236d28d9'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='120' height='120' rx='28' fill='url(%23g)'/%3E%3Cpath d='M30 36H90V46L50 84H90V94H30V84L70 46H30Z' fill='white'/%3E%3C/svg%3E">
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/light/style.css" crossorigin>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css" crossorigin>
+<style>
+/* ============ tokens ============ */
+:root{
+  --paper:#faf7f1; --paper-warm:#f2ede1; --paper-deep:#ece5d5;
+  --ink-900:#221d2e; --ink-800:#2d2740; --ink-700:#3b3450;
+  --ink-500:#655e76; --ink-300:#a49dae; --ink-150:#cfc8bd;
+  --hair:#e5ddcd; --hair-dark:rgba(250,247,241,.14);
+  --accent:#6d28d9; --accent-bright:#a78bfa; --accent-soft:#efe9fb;
+  --good:#0b7248; --good-tint:#e4f3ec;
+  --warn:#9a6700; --warn-tint:#f7efdc;
+  --bad:#b42318; --bad-tint:#f9e8e6;
+  --serif:Geist,-apple-system,'PingFang SC','Segoe UI',sans-serif;
+  --sans:Geist,-apple-system,'PingFang SC','Segoe UI',sans-serif;
+  --mono:'JetBrains Mono','SF Mono',Menlo,monospace;
+  --side-w:236px;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+body{
+  font-family:var(--sans);background:var(--paper);color:var(--ink-900);
+  font-size:15px;line-height:1.65;-webkit-font-smoothing:antialiased;
+}
+body::before{
+  content:"";position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='140' height='140'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix values='0 0 0 0 0.55 0 0 0 0 0.51 0 0 0 0 0.42 0 0 0 0.035 0'/%3E%3C/filter%3E%3Crect width='140' height='140' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+::selection{background:var(--accent-soft)}
+a{color:inherit}
+button{font-family:inherit}
+
+/* ============ app shell ============ */
+.app{display:flex;min-height:100vh;position:relative;z-index:1}
+.side{
+  width:var(--side-w);flex-shrink:0;background:var(--ink-900);color:var(--paper);
+  display:flex;flex-direction:column;position:sticky;top:0;height:100vh;height:100dvh;
+}
+@media(max-width:880px){
+  .app{flex-direction:column}
+  .side{position:static;width:100%;height:auto}
+  .brand{padding:14px 18px 12px}
+  .nav{display:flex;overflow-x:auto;padding:6px 12px;gap:2px}
+  .nav-label{display:none}
+  .nav a{white-space:nowrap;flex-shrink:0;padding:7px 10px}
+  .nav a .tool{display:none}
+  .nav a .tick{display:none}
+  .nav a .lock{display:none}
+  .nav .prochip{display:none}
+  .side-foot{display:none}
+  .topbar{padding:18px 18px 14px;flex-wrap:wrap;gap:10px}
+  .content{padding:18px 18px 60px}
+  .stat{padding:14px 16px 14px 0;margin-right:16px}
+  .stat .sv{font-size:30px}.stat.hero .sv{font-size:42px}
+  .two-col,.gap-grid,.geo-grid{gap:24px}
+  .audit-top{padding:16px 18px;gap:14px}
+  .audit-stats{padding-left:18px;margin-left:0;gap:8px 22px}
+  .ring-wrap{padding:14px 16px}
+  .lab-bar .field,.lab-bar .field input,.lab-bar .field select{min-width:0;width:100%}
+  .field input.urlbar{width:100%}
+}
+.brand{display:flex;align-items:center;gap:10px;padding:22px 20px 18px;border-bottom:1px solid var(--hair-dark)}
+.brand .bt{font-family:var(--serif);font-size:17px;font-weight:600;letter-spacing:-.01em}
+.brand .bs{font-family:var(--mono);font-size:10px;color:var(--ink-300);letter-spacing:.14em;text-transform:uppercase;margin-top:1px}
+.nav{flex:1;min-height:0;padding:14px 12px;overflow-y:auto;scrollbar-width:thin;scrollbar-color:rgba(250,247,241,.18) transparent}
+.nav::-webkit-scrollbar{width:8px}
+.nav::-webkit-scrollbar-thumb{background:rgba(250,247,241,.16);border-radius:4px}
+.nav::-webkit-scrollbar-thumb:hover{background:rgba(250,247,241,.3)}
+.nav::-webkit-scrollbar-track{background:transparent}
+.nav-label{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink-300);padding:14px 10px 6px}
+.nav a{
+  display:flex;align-items:baseline;gap:8px;padding:8px 10px;border-radius:8px;
+  color:#cfc9dc;text-decoration:none;font-size:13.5px;font-weight:500;cursor:pointer;
+}
+.nav a > span[data-i18n]{white-space:nowrap;flex-shrink:0}
+.nav a:hover{background:rgba(250,247,241,.06);color:var(--paper)}
+.nav a.active{background:rgba(167,139,250,.12);color:var(--paper)}
+.nav a .tick{width:3px;height:14px;border-radius:2px;background:var(--accent-bright);opacity:0;align-self:center;flex-shrink:0}
+.nav a.active .tick{opacity:1}
+.nav a .ic{font-size:16px;line-height:1;align-self:center;flex-shrink:0;opacity:.9}
+.nav a .tool{font-family:var(--mono);font-size:9.5px;color:var(--ink-300);margin-left:auto;padding-top:2px;flex-shrink:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.nav a.active .tool{color:var(--accent-bright)}
+.side-foot{padding:16px 20px 20px;border-top:1px solid var(--hair-dark)}
+.side-foot .kf{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-300);margin-bottom:8px}
+.keyrow{display:flex;flex-wrap:wrap;gap:5px}
+.keychip{font-family:var(--mono);font-size:10px;padding:2px 8px;border-radius:99px;background:rgba(250,247,241,.07);color:#b9b2c9;cursor:pointer}
+.keychip:hover{background:rgba(250,247,241,.14);color:var(--paper)}
+.keychip.on{color:#7fd6ae;background:rgba(16,138,95,.16)}
+.side-foot .ver{font-family:var(--mono);font-size:10px;color:var(--ink-300);margin-top:12px}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{
+  display:flex;align-items:flex-end;justify-content:space-between;gap:16px;
+  padding:26px 36px 18px;border-bottom:1px solid var(--hair);
+}
+.topbar h1{font-family:var(--serif);font-size:23px;font-weight:600;line-height:1.2}
+.clichip{
+  display:inline-flex;align-items:center;gap:7px;font-family:var(--mono);font-size:11.5px;
+  color:var(--ink-500);background:var(--paper-warm);border:1px solid var(--hair);
+  border-radius:8px;padding:4px 10px;margin-top:8px;max-width:100%;
+}
+.clichip code{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
+.badge-demo{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;border:1px dashed var(--ink-150);color:var(--ink-500);border-radius:99px;padding:4px 11px}
+.badge-live{border:1px solid var(--good);color:var(--good);border-radius:99px;padding:4px 11px;font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;display:none;align-items:center;gap:6px}
+.badge-live i{width:6px;height:6px;border-radius:50%;background:var(--good);display:inline-block}
+.lang{display:flex;font-family:var(--mono);font-size:11px;border:1px solid var(--hair);border-radius:8px;overflow:hidden}
+.lang button{border:0;background:transparent;padding:5px 10px;cursor:pointer;color:var(--ink-500);font-family:inherit;font-size:inherit}
+.lang button.on{background:var(--ink-900);color:var(--paper)}
+.gh{font-family:var(--mono);font-size:11px;color:var(--ink-500);text-decoration:underline;text-underline-offset:3px}
+.gh:hover{color:var(--accent)}
+
+.content{padding:30px 36px 70px;max-width:1180px;width:100%}
+.view{display:none}
+.view.active{display:block;animation:rise .5s cubic-bezier(.2,.7,.3,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+
+/* ============ shared ============ */
+.kicker{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--accent);margin-bottom:10px}
+.lede{font-family:var(--serif);font-size:18.5px;font-weight:500;line-height:1.45;color:var(--ink-700);max-width:660px;letter-spacing:-.005em}
+.hairline{border:0;border-top:1px solid var(--hair);margin:34px 0}
+.mono{font-family:var(--mono)}
+.btn{
+  display:inline-flex;align-items:center;gap:8px;background:var(--ink-900);color:var(--paper);
+  border:0;border-radius:8px;padding:10px 20px;font-size:14px;font-weight:500;cursor:pointer;
+  transition:transform .16s cubic-bezier(.2,.7,.3,1),background .2s cubic-bezier(.2,.7,.3,1);
+}
+.btn:hover{transform:translateY(-1px)}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.ghost{background:transparent;color:var(--ink-700);border:1px solid var(--ink-150)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn.accent{background:var(--accent)}
+.btn.sm{padding:7px 14px;font-size:12.5px}
+
+.tbl{width:100%;border-collapse:collapse;font-size:13.5px}
+.tbl th{
+  font-family:var(--mono);font-size:10.5px;letter-spacing:.1em;text-transform:uppercase;
+  color:var(--ink-500);font-weight:500;text-align:left;padding:10px 12px;border-bottom:1px solid var(--hair);
+}
+.tbl td{padding:11px 12px;border-bottom:1px solid var(--hair);vertical-align:middle}
+.tbl tr.rowsel{cursor:pointer}
+.tbl tr.rowsel:hover td{background:var(--paper-warm)}
+.kw{font-weight:500}
+.num{font-family:var(--mono);font-size:12.5px;font-variant-numeric:tabular-nums}
+.kdbar{display:flex;align-items:center;gap:9px}
+.kdbar .track{width:86px;height:5px;border-radius:3px;background:var(--paper-deep);overflow:hidden}
+.kdbar .fill{height:100%;border-radius:3px;background:var(--accent)}
+.kdbar .v{font-family:var(--mono);font-size:12px;width:22px}
+.chip{font-family:var(--mono);font-size:10.5px;border:1px solid var(--ink-150);border-radius:99px;padding:2px 9px;color:var(--ink-500);white-space:nowrap}
+.chip.info{border-color:#cfe3d8;color:var(--good)}
+.chip.comm{border-color:#e3d5b8;color:var(--warn)}
+.chip.tran{border-color:#d9c9f2;color:var(--accent)}
+.chip.nav{border-color:var(--ink-150);color:var(--ink-500)}
+.st0{color:var(--good)} .st1{color:var(--warn)} .st2{color:var(--bad)}
+#toast{
+  position:fixed;bottom:26px;left:50%;transform:translate(-50%,16px);opacity:0;z-index:60;
+  background:var(--ink-900);color:var(--paper);font-family:var(--mono);font-size:12px;
+  padding:10px 18px;border-radius:8px;pointer-events:none;transition:all .3s ease;max-width:80vw;
+}
+#toast.show{opacity:1;transform:translate(-50%,0)}
+
+/* forms */
+.lab-bar{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-end;margin-top:24px}
+.field{display:flex;flex-direction:column;gap:5px}
+.field label{font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-500)}
+.field input[type=text],.field select,.field textarea{
+  font-family:var(--mono);font-size:13px;padding:9px 12px;border:1px solid var(--ink-150);
+  border-radius:8px;background:#fff;color:var(--ink-900);outline:none;min-width:190px;
+}
+.field textarea{resize:vertical;min-height:64px;line-height:1.6}
+/* tag chips input (rank tracker) */
+.tags{
+  display:flex;flex-wrap:wrap;gap:6px;align-items:center;
+  background:#fff;border:1px solid var(--ink-150);border-radius:8px;
+  padding:7px 9px;cursor:text;min-height:44px;
+}
+.tags:focus-within{border-color:var(--accent)}
+.tags .tag{
+  display:inline-flex;align-items:center;gap:5px;font-family:var(--mono);font-size:11.5px;
+  background:var(--paper-warm);border:1px solid var(--hair);border-radius:99px;
+  padding:3px 6px 3px 11px;color:var(--ink-700);line-height:1.5;
+}
+.tags .tag button{
+  border:0;background:transparent;cursor:pointer;color:var(--ink-300);
+  font-size:14px;line-height:1;padding:0 3px;border-radius:50%;font-family:var(--mono);
+}
+.tags .tag button:hover{color:var(--bad)}
+.tags input{
+  flex:1;min-width:130px;border:0;outline:none;font-family:var(--mono);font-size:12.5px;
+  background:transparent;color:var(--ink-900);padding:4px 2px;
+}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--accent)}
+.field input.urlbar{min-width:280px}
+.switch{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--ink-700);cursor:pointer;padding-bottom:10px}
+.switch input{appearance:none;width:32px;height:18px;border-radius:99px;background:var(--paper-deep);position:relative;cursor:pointer;transition:background .2s}
+.switch input::after{content:"";position:absolute;width:14px;height:14px;border-radius:50%;background:#fff;top:2px;left:2px;transition:left .2s}
+.switch input:checked{background:var(--accent)}
+.switch input:checked::after{left:16px}
+
+/* run log strip */
+.rlog{
+  font-family:var(--mono);font-size:12px;line-height:1.8;color:var(--ink-700);
+  background:var(--paper-warm);border:1px solid var(--hair);border-radius:8px;
+  padding:10px 14px;margin-top:16px;display:none;max-height:180px;overflow-y:auto;
+}
+.rlog.show{display:block}
+.rlog .err{color:var(--bad)}
+.rlog .okl{color:var(--good)}
+.rlog .dim{color:var(--ink-500)}
+
+/* terminal (keyword lab) */
+.term{background:var(--ink-900);border-radius:10px;margin-top:22px;overflow:hidden;font-family:var(--mono);font-size:12px;line-height:1.8;display:none}
+.term.show{display:block}
+.term-h{display:flex;gap:7px;padding:10px 14px;border-bottom:1px solid var(--hair-dark);align-items:center}
+.term-h i{width:10px;height:10px;border-radius:50%;display:block}
+.term-h i:nth-child(1){background:#ff5f57}.term-h i:nth-child(2){background:#febc2e}.term-h i:nth-child(3){background:#28c840}
+.term-h span{color:var(--ink-300);font-size:10.5px;margin-left:8px;letter-spacing:.08em}
+.term-b{padding:12px 16px;max-height:240px;overflow-y:auto;color:#cfc9dc}
+.term-b .ln{white-space:pre-wrap;word-break:break-all}
+.term-b .ln.cmd{color:#fff}
+.term-b .ln.ok{color:#7fd6ae}
+.term-b .ln.dim{color:#8d86a0}
+.term-b .ln.err{color:#ff8f86}
+.caret{display:inline-block;width:7px;height:13px;background:var(--accent-bright);vertical-align:-2px;animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+
+/* ============ dashboard ============ */
+.stat-strip{display:flex;flex-wrap:wrap;gap:0;margin:28px 0 0;border-top:1px solid var(--hair)}
+.stat{padding:22px 34px 22px 0;margin-right:34px;border-right:1px solid var(--hair)}
+.stat:last-child{border-right:0}
+.stat .sv{font-family:var(--serif);font-size:33px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums;letter-spacing:-.015em}
+.stat .sv em{font-style:normal;font-size:20px;color:var(--ink-500)}
+.stat .sl{font-family:var(--mono);font-size:10.5px;letter-spacing:.12em;text-transform:uppercase;color:var(--ink-500);margin-top:7px}
+.stat.hero .sv{font-size:44px;color:var(--accent)}
+.pipe{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-top:22px}
+.pipe .step{font-family:var(--mono);font-size:11.5px;padding:5px 12px;border-radius:8px;background:var(--paper-warm);border:1px solid var(--hair);color:var(--ink-700)}
+.pipe .step.last{background:var(--accent);border-color:var(--accent);color:#fff}
+.pipe .arr{color:var(--ink-500);font-size:12px}
+.two-col{display:grid;grid-template-columns:3fr 2fr;gap:44px;margin-top:8px}
+@media(max-width:960px){.two-col{grid-template-columns:1fr}}
+.panel-h{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-500);margin:26px 0 12px;display:flex;justify-content:space-between;align-items:baseline}
+.runs{font-family:var(--mono);font-size:12px;color:var(--ink-700)}
+.runs li{list-style:none;display:flex;gap:12px;padding:9px 2px;border-bottom:1px solid var(--hair);align-items:baseline}
+.runs .t{color:var(--ink-500);flex-shrink:0;width:44px}
+.runs .cmd{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.runs .ok{color:var(--good);flex-shrink:0}
+.runs .dur{color:var(--ink-500);flex-shrink:0;width:44px;text-align:right}
+.ring-wrap{display:flex;gap:26px;align-items:center;background:var(--paper-warm);border:1px solid var(--hair);border-radius:10px;padding:20px 26px}
+.ring-wrap ul{border-left:1px solid var(--hair);padding-left:26px;margin-left:4px;flex:1}
+.ring{position:relative;width:112px;height:112px;flex-shrink:0}
+.ring svg{transform:rotate(-90deg)}
+.ring .rc{fill:none;stroke:var(--ink-150);stroke-width:9}
+.ring .rv{fill:none;stroke:var(--accent);stroke-width:9;stroke-linecap:round;transition:stroke-dashoffset 1s ease}
+.ring .rn{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center}
+.ring .rn b{font-family:var(--serif);font-size:25px;font-weight:600;line-height:1;font-variant-numeric:tabular-nums}
+.ring .rn span{font-family:var(--mono);font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-500)}
+.hlist{font-size:13px;color:var(--ink-700)}
+.hlist li{list-style:none;padding:8px 0;border-bottom:1px solid var(--hair);display:flex;justify-content:space-between;gap:14px}
+.hlist .mono{font-size:12px}
+
+/* filters */
+.filters{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin:22px 0 4px}
+.filters input[type=text]{font-size:13px;padding:7px 11px;border:1px solid var(--ink-150);border-radius:8px;background:#fff;outline:none;font-family:var(--mono);min-width:170px}
+.filters input[type=text]:focus{border-color:var(--accent)}
+.filters select{font-size:13px;padding:7px 9px;border:1px solid var(--ink-150);border-radius:8px;background:#fff;outline:none;font-family:var(--sans);color:var(--ink-700)}
+.filters .cnt{font-family:var(--mono);font-size:11px;color:var(--ink-500);margin-left:auto}
+.tblwrap{overflow-x:auto}
+
+/* drawer */
+#drawer{
+  position:fixed;top:0;right:0;bottom:0;width:min(460px,94vw);background:var(--paper);z-index:50;
+  border-left:1px solid var(--hair);box-shadow:-18px 0 50px rgba(34,29,46,.12);
+  transform:translateX(105%);transition:transform .32s cubic-bezier(.2,.7,.3,1);
+  display:flex;flex-direction:column;
+}
+#drawer.open{transform:none}
+.dr-h{display:flex;justify-content:space-between;align-items:flex-start;padding:24px 26px 14px;border-bottom:1px solid var(--hair)}
+.dr-h h3{font-family:var(--serif);font-size:18px;font-weight:600;line-height:1.25}
+.dr-x{border:0;background:transparent;font-size:20px;cursor:pointer;color:var(--ink-500);padding:2px 6px}
+.dr-x:hover{color:var(--ink-900)}
+.dr-b{padding:20px 26px 40px;overflow-y:auto;flex:1}
+.dr-sec{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink-500);margin:22px 0 10px}
+.serp-row{display:flex;align-items:center;gap:10px;margin-bottom:9px;font-size:12.5px}
+.serp-row .sl{width:110px;color:var(--ink-500);flex-shrink:0}
+.serp-row .st{flex:1;height:14px;background:var(--paper-deep);border-radius:3px;overflow:hidden}
+.serp-row .sf{height:100%;background:var(--accent)}
+.serp-row .sv{font-family:var(--mono);font-size:11.5px;width:26px;text-align:right}
+.dr-note{font-size:13.5px;color:var(--ink-700);line-height:1.7}
+.dr-kv{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--hair);font-size:13px}
+.dr-kv b{font-family:var(--mono);font-weight:500}
+.simtag{font-family:var(--mono);font-size:9.5px;letter-spacing:.1em;text-transform:uppercase;background:var(--warn-tint);color:var(--warn);border-radius:6px;padding:1px 6px;margin-left:8px;vertical-align:2px}
+
+/* clusters */
+.cluster-list{margin-top:26px}
+.cl{border-top:1px solid var(--hair);padding:20px 0}
+.cl:last-child{border-bottom:1px solid var(--hair)}
+.cl-h{display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.cl-h h3{font-family:var(--serif);font-size:17px;font-weight:600}
+.cl-h .meta{font-family:var(--mono);font-size:11px;color:var(--ink-500)}
+.cl-kws{display:flex;flex-wrap:wrap;gap:7px;margin-top:12px}
+.cl-kws .chip{font-size:11px}
+.prio{margin-left:auto;font-family:var(--mono);font-size:10.5px;letter-spacing:.08em;text-transform:uppercase;padding:3px 10px;border-radius:99px}
+.prio.hi{background:var(--good-tint);color:var(--good)}
+.prio.mid{background:var(--warn-tint);color:var(--warn)}
+.prio.lo{background:#f0eaf7;color:var(--ink-500)}
+#matrix{width:100%;height:auto;margin-top:10px}
+.mx-tip{font-family:var(--mono);font-size:11px;color:var(--ink-500);margin-top:6px}
+
+/* gap */
+.gap-grid{display:grid;grid-template-columns:1fr 1fr;gap:44px;margin-top:26px}
+@media(max-width:960px){.gap-grid{grid-template-columns:1fr}}
+.sitecov{margin-bottom:26px}
+.sitecov .sh{display:flex;justify-content:space-between;font-size:13px;margin-bottom:7px}
+.sitecov .sh b{font-family:var(--mono);font-weight:500}
+.sitecov .sh span{font-family:var(--mono);font-size:11px;color:var(--ink-500)}
+.sitecov .track{height:9px;background:var(--paper-deep);border-radius:5px;overflow:hidden}
+.sitecov .fill{height:100%;border-radius:5px}
+.sitecov.you .fill{background:var(--accent)}
+.sitecov.c1 .fill{background:var(--ink-300)}
+.sitecov.c2 .fill{background:var(--ink-150)}
+
+/* audit */
+.audit-top{
+  display:flex;gap:0;align-items:center;flex-wrap:wrap;margin-top:22px;
+  background:var(--paper-warm);border:1px solid var(--hair);border-radius:10px;
+  padding:24px 30px;
+}
+.audit-stats{
+  display:grid;grid-template-columns:repeat(3,auto);gap:10px 36px;
+  padding-left:36px;border-left:1px solid var(--hair);margin-left:36px;
+}
+.audit-stats .as{display:flex;align-items:baseline;gap:9px;font-size:13px;color:var(--ink-700)}
+.audit-stats .as b{font-family:var(--serif);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.audit-top .btn{margin-left:auto}
+/* audit — grouped by check type (Lighthouse-style) */
+.ckgrp{border-top:1px solid var(--hair)}
+.ckgrp:first-child{border-top:0}
+.ckgrp-h{display:flex;align-items:center;gap:10px;padding:13px 2px;cursor:pointer;user-select:none}
+.ckgrp-h .sev{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.sev-error{background:var(--bad)} .sev-warning{background:var(--warn)} .sev-info{background:var(--ink-500)}
+.ckgrp-h .nm{font-weight:600;font-size:14px;color:var(--ink-900);letter-spacing:-.005em}
+.ckgrp-h .cnt{font-family:var(--mono);font-size:10.5px;border:1px solid var(--ink-150);border-radius:99px;padding:1px 8px;color:var(--ink-500);flex-shrink:0}
+.ckgrp-h .first{font-family:var(--mono);font-size:11px;color:var(--ink-500);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ckgrp-h .tw{font-family:var(--mono);font-size:12px;color:var(--ink-300);transition:transform .2s;flex-shrink:0}
+.ckgrp.open .tw{transform:rotate(90deg)}
+.ckgrp-b{display:none;padding:0 2px 14px 18px}
+.ckgrp.open .ckgrp-b{display:block}
+.ckrow{display:flex;gap:16px;padding:7px 0;border-top:1px dashed var(--hair);font-size:12.5px;align-items:baseline}
+.ckrow .pth{font-family:var(--mono);font-size:11.5px;color:var(--ink-700);flex:0 0 38%;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ckrow .dtl{color:var(--ink-500);flex:1;min-width:0}
+@media(max-width:640px){.ckrow{flex-direction:column;gap:2px}.ckrow .pth{flex-basis:auto}}
+
+/* geo */
+.geo-grid{display:grid;grid-template-columns:5fr 4fr;gap:44px;margin-top:10px}
+@media(max-width:960px){.geo-grid{grid-template-columns:1fr}}
+.crawl-tbl td,.crawl-tbl th{padding:9px 10px}
+.dotst{display:inline-flex;align-items:center;gap:7px;font-size:12.5px}
+.dotst i{width:8px;height:8px;border-radius:50%;display:inline-block}
+.dotst.ok i{background:var(--good)} .dotst.mid i{background:var(--warn)} .dotst.bad i{background:var(--bad)}
+.llms-box{background:var(--ink-900);border-radius:10px;padding:16px 18px;font-family:var(--mono);font-size:11.5px;line-height:1.85;color:#cfc9dc;margin-top:12px;overflow:auto;max-height:480px}
+.llms-box .c{color:#8d86a0}
+.llms-box .hl{color:var(--accent-bright)}
+.llms-box a{color:var(--accent-bright);text-decoration:underline;text-underline-offset:3px}
+.llms-box .h1{font-size:14px;font-weight:600;color:#fff;margin:2px 0 4px}
+.llms-box .h2{color:var(--accent-bright);font-weight:500;margin-top:12px}
+.note-li{list-style:none;padding:10px 0 10px 18px;border-left:2px solid var(--accent-soft);font-size:13.5px;color:var(--ink-700);margin-bottom:6px}
+
+/* ranks */
+.spark{display:block}
+.delta{font-family:var(--mono);font-size:11.5px}
+.delta.up{color:var(--good)} .delta.dn{color:var(--bad)} .delta.eq{color:var(--ink-500)}
+
+/* ---- audit fixes: keyboard focus, display type polish ---- */
+.btn:focus-visible,.nav a:focus-visible,.lang button:focus-visible,.dr-x:focus-visible,
+.ckgrp-h:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.field input:focus-visible,.field select:focus-visible,.field textarea:focus-visible,
+.filters input:focus-visible,.filters select:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+tr.rowsel:focus-visible{outline:none}
+tr.rowsel:focus-visible td{background:var(--accent-soft)}
+.topbar h1,.lede,.stat .sv,.ring .rn b,.cl-h h3,.dr-h h3,.ckgrp-h .nm{letter-spacing:-.015em}
+.topbar h1,.stat .sl,.panel-h{text-wrap:balance}
+.lede{text-wrap:pretty}
+
+.footnote{margin-top:60px;padding-top:18px;border-top:1px solid var(--hair);font-family:var(--mono);font-size:11px;color:var(--ink-500);display:flex;gap:18px;flex-wrap:wrap}
+
+/* settings */
+.keyrow-set{border-top:1px solid var(--hair);padding:18px 0 16px}
+.keyrow-set:first-child{border-top:0;padding-top:4px}
+.kr-head{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.kr-name{font-family:var(--mono);font-size:13px;font-weight:600;letter-spacing:.06em}
+.kr-doc{font-size:12.5px;color:var(--ink-500);margin:4px 0 10px}
+.kr-in{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.kr-input{
+  flex:1;max-width:420px;min-width:200px;font-family:var(--mono);font-size:13px;
+  padding:9px 12px;border:1px solid var(--ink-150);border-radius:8px;background:#fff;outline:none;
+}
+.kr-input:focus{border-color:var(--accent)}
+.kr-eye{display:inline-flex;align-items:center;justify-content:center;width:34px;height:34px;padding:0}
+.kr-eye i{font-size:16px}
+
+/* pro engine */
+.prochip{font-family:var(--mono);font-size:9px;letter-spacing:.1em;background:linear-gradient(135deg,#a78bfa,#6d28d9);color:#fff;border-radius:4px;padding:1px 6px;vertical-align:1px}
+.nav a.pro-locked{opacity:.62}
+.nav a .lock{font-size:12px;color:var(--accent-bright);margin-left:auto;flex-shrink:0}
+.nav a .lock.open{color:var(--good)}
+.nav a.pro-locked:hover .lock{color:#fff}
+.unlock-card{
+  margin-top:28px;border:1px dashed var(--ink-150);border-radius:10px;
+  padding:38px 30px;text-align:center;max-width:560px;
+}
+.unlock-card i.big{font-size:34px;color:var(--accent);display:block;margin-bottom:12px}
+.unlock-card .t{font-family:var(--serif);font-size:19px;font-weight:600;margin-bottom:6px}
+.unlock-card .d{font-size:13px;color:var(--ink-500);margin-bottom:18px}
+.unlock-card .ver{font-family:var(--mono);font-size:11px;color:var(--good);margin-bottom:16px}
+.uk-row{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap}
+.ukin{font-family:var(--mono);font-size:12.5px;padding:9px 12px;border:1px solid var(--hair);border-radius:8px;background:#fff;color:var(--ink-900);min-width:250px;max-width:340px}
+.ukin:focus{outline:2px solid var(--accent-soft);border-color:var(--accent-bright)}
+.ukin::placeholder{color:var(--ink-300)}
+.brief-titles{list-style:none;counter-reset:bt;margin-top:6px}
+.brief-titles li{
+  counter-increment:bt;padding:10px 2px 10px 34px;border-bottom:1px solid var(--hair);
+  position:relative;font-size:14px;color:var(--ink-700);
+}
+.brief-titles li::before{
+  content:counter(bt,decimal-leading-zero);position:absolute;left:2px;top:12px;
+  font-family:var(--mono);font-size:10px;color:var(--accent);
+}
+.brief-outline li{list-style:none;padding:7px 0 7px 22px;border-bottom:1px dashed var(--hair);font-size:13.5px;color:var(--ink-700);position:relative}
+.brief-outline li::before{content:"·";position:absolute;left:0;color:var(--accent);font-weight:600}
+</style>
+</head>
+<body>
+
+<div class="app">
+  <!-- ================= sidebar ================= -->
+  <aside class="side">
+    <div class="brand">
+      <svg width="34" height="34" viewBox="0 0 120 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="zg" x1="0%" y1="0%" x2="100%" y2="100%">
+          <stop offset="0%" stop-color="#a78bfa"/><stop offset="100%" stop-color="#6d28d9"/>
+        </linearGradient></defs>
+        <rect width="120" height="120" rx="28" fill="url(#zg)"/>
+        <path d="M 30 36 L 90 36 L 90 46 L 50 84 L 90 84 L 90 94 L 30 94 L 30 84 L 70 46 L 30 46 Z" fill="white"/>
+      </svg>
+      <div><div class="bt">ZensInk</div><div class="bs" data-i18n="brandSub">WebUI</div></div>
+    </div>
+    <nav class="nav" id="nav">
+      <div class="nav-label" data-i18n="navWorkspace">Workspace</div>
+      <a data-view="dashboard" class="active"><span class="tick"></span><i class="ph ph-squares-four ic"></i><span data-i18n="navDash">Dashboard</span></a>
+      <a data-view="keywords"><span class="tick"></span><i class="ph ph-magnifying-glass ic"></i><span data-i18n="navKw">Keyword Lab</span><span class="tool">research·kd</span></a>
+      <a data-view="clusters"><span class="tick"></span><i class="ph ph-circles-three-plus ic"></i><span data-i18n="navClu">Clusters</span><span class="tool">cluster</span></a>
+      <a data-view="gap"><span class="tick"></span><i class="ph ph-git-diff ic"></i><span data-i18n="navGap">Competitor Gap</span><span class="tool">gap</span></a>
+      <div class="nav-label" data-i18n="navSite">Site</div>
+      <a data-view="audit"><span class="tick"></span><i class="ph ph-list-checks ic"></i><span data-i18n="navAudit">Site Audit</span><span class="tool">audit</span></a>
+      <a data-view="geo"><span class="tick"></span><i class="ph ph-sparkle ic"></i><span data-i18n="navGeo">GEO / AI</span><span class="tool">geo</span></a>
+      <a data-view="ranks"><span class="tick"></span><i class="ph ph-chart-line-up ic"></i><span data-i18n="navRank">Rank Tracker</span><span class="tool">rank</span></a>
+      <div class="nav-label" data-i18n="navSys">System</div>
+      <a data-view="settings"><span class="tick"></span><i class="ph ph-gear-six ic"></i><span data-i18n="navSet">Settings</span></a>
+    </nav>
+    <div class="side-foot">
+      <div class="kf"><i class="ph ph-key" style="font-size:12px;margin-right:4px;vertical-align:-1px"></i><span data-i18n="keysTitle">API keys (.env)</span></div>
+      <div class="keyrow" id="keyrow"></div>
+      <div class="ver" id="verLine">zens-ink · connecting…</div>
+    </div>
+  </aside>
+
+  <!-- ================= main ================= -->
+  <div class="main">
+    <header class="topbar">
+      <div style="min-width:0">
+        <h1 id="viewTitle">Dashboard</h1>
+        <div class="clichip"><code id="cliChip">zens-ink --help</code></div>
+      </div>
+      <div class="top-right">
+        <span class="badge-demo" id="badgeDemo" data-i18n="demoBadge">Demo data</span>
+        <span class="badge-live" id="badgeLive"><i></i><span id="badgeLiveTxt">LIVE</span></span>
+        <div class="lang"><button id="langEn" class="on">EN</button><button id="langZh">中文</button></div>
+        <a class="gh" href="https://github.com/ZensInk/zens-ink-seo-package" target="_blank" rel="noopener">GitHub ↗</a>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- ========== DASHBOARD ========== -->
+      <section class="view active" id="view-dashboard">
+        <div class="kicker" data-i18n="dashKick">Workspace overview</div>
+        <div class="lede" data-i18n="dashLede">The same engine as the CLI · Google Autocomplete, Bing, Serper, GSC · now with buttons.</div>
+        <div class="pipe">
+          <span class="step">keyword_research</span><span class="arr">→</span>
+          <span class="step">keyword_volume</span><span class="arr">→</span>
+          <span class="step">kd</span><span class="arr">→</span>
+          <span class="step">competitor_gap</span><span class="arr">→</span>
+          <span class="step last">site_audit</span>
+        </div>
+        <div class="stat-strip">
+          <div class="stat hero"><div class="sv" id="stKw">·</div><div class="sl" data-i18n="stKw">keywords discovered (session)</div></div>
+          <div class="stat"><div class="sv" id="stClusters">·</div><div class="sl" data-i18n="stClu">clusters</div></div>
+          <div class="stat"><div class="sv" id="stIssues">·</div><div class="sl" data-i18n="stIss">audit issues found</div></div>
+          <div class="stat"><div class="sv" id="stGeo">·<em>/100</em></div><div class="sl" data-i18n="stGeo">AI readiness (zens.ink)</div></div>
+        </div>
+        <hr class="hairline">
+        <div class="two-col">
+          <div>
+            <div class="panel-h"><span data-i18n="recentRuns">This session</span></div>
+            <ul class="runs" id="dashRuns"><li><span class="cmd dim" data-i18n="dashEmpty">run a tool and it lands here</span></li></ul>
+          </div>
+          <div>
+            <div class="panel-h"><span data-i18n="dashHint">Try first</span></div>
+            <ul class="hlist">
+              <li><span data-i18n="dashT1">Keyword Lab → run "tarot"</span><span class="mono">→</span></li>
+              <li><span data-i18n="dashT2">GEO / AI → audit zens.ink</span><span class="mono">→</span></li>
+              <li><span data-i18n="dashT3">Site Audit → sample-dist</span><span class="mono">→</span></li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== KEYWORD LAB ========== -->
+      <section class="view" id="view-keywords">
+        <div class="kicker">keyword_research · search_intent · keyword_volume · kd</div>
+        <div class="lede" data-i18n="kwLede">Seed a topic. Google Autocomplete expands it, intent gets classified locally; volume and KD light up when keys are present.</div>
+        <div class="lab-bar">
+          <div class="field"><label data-i18n="kwSeed">Seed keyword</label><input type="text" id="seedInput" value="tarot"></div>
+          <div class="field"><label data-i18n="kwSource">Source</label>
+            <select id="sourceSel"><option value="google" selected>google</option><option value="reddit">reddit</option></select>
+          </div>
+          <div class="field"><label data-i18n="kwCountry">Country</label>
+            <select id="countrySel"><option value="us" selected>us</option><option value="uk">uk</option><option value="de">de</option><option value="jp">jp</option></select>
+          </div>
+          <label class="switch"><input type="checkbox" id="expandChk"><span data-i18n="kwExpand">a–z long-tail expansion (slow, real)</span></label>
+          <label class="switch"><input type="checkbox" id="zhChk"><span data-i18n="kwZh">中文 mode (--zh)</span></label>
+          <button class="btn accent" id="runBtn" data-i18n="kwRun">Run pipeline</button>
+        </div>
+        <div class="term" id="term">
+          <div class="term-h"><i></i><i></i><i></i><span id="termTitle">zens-ink</span></div>
+          <div class="term-b" id="termBody"></div>
+        </div>
+        <div class="filters">
+          <input type="text" id="fSearch" data-i18n-ph="fSearchPh" placeholder="filter keywords…">
+          <select id="fIntent">
+            <option value="all" data-i18n="fAll">all intents</option>
+            <option value="informational">informational</option>
+            <option value="commercial">commercial</option>
+            <option value="transactional">transactional</option>
+          </select>
+          <select id="fKd">
+            <option value="100" data-i18n="fAnyKd">any KD</option>
+            <option value="15">KD ≤ 15</option><option value="30">KD ≤ 30</option><option value="50">KD ≤ 50</option>
+          </select>
+          <span class="cnt" id="rowCnt"></span>
+          <button class="btn ghost sm" id="csvBtn" data-i18n="exportCsv">Export CSV</button>
+        </div>
+        <div class="tblwrap">
+          <table class="tbl" id="kwTable">
+            <thead><tr>
+              <th data-i18n="thKw">Keyword</th><th data-i18n="thVol">Volume</th>
+              <th data-i18n="thKd">KD</th><th data-i18n="thOpp">Opp</th>
+              <th data-i18n="thIntent">Intent</th>
+              <th data-i18n="thConf">Conf.</th><th></th>
+            </tr></thead>
+            <tbody id="kwBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- ========== CLUSTERS ========== -->
+      <section class="view" id="view-clusters">
+        <div class="kicker">keyword_cluster</div>
+        <div class="lede" data-i18n="clLede">Harvested keywords from Keyword Lab, clustered by token similarity · greedy centroid assignment, same as the CLI.</div>
+        <div class="lab-bar">
+          <button class="btn accent" id="clusterBtn" data-i18n="clRun">Cluster harvested keywords</button>
+          <span class="cnt mono" id="harvestCnt" style="padding-bottom:10px"></span>
+        </div>
+        <div class="rlog" id="clusterLog"></div>
+        <div class="cluster-list" id="clusterList"></div>
+        <div id="matrixOut"></div>
+      </section>
+
+      <!-- ========== GAP ========== -->
+      <section class="view" id="view-gap">
+        <div class="kicker">competitor_gap</div>
+        <div class="lede" data-i18n="gapLede">Real sitemaps, one diff. Topics every competitor covers that you don't · the honest content gap.</div>
+        <div class="lab-bar">
+          <div class="field"><label data-i18n="gapYours">Your sitemap</label><input type="text" class="urlbar" id="gapYou" value="https://zens.ink/sitemap.xml"></div>
+          <div class="field"><label data-i18n="gapC1">Competitor 1</label><input type="text" class="urlbar" id="gapC1" value="https://labyrinthos.co/sitemap.xml"></div>
+          <div class="field"><label data-i18n="gapC2">Competitor 2</label><input type="text" class="urlbar" id="gapC2" placeholder="https://…/sitemap.xml"></div>
+          <button class="btn accent" id="gapBtn" data-i18n="gapRun">Run diff</button>
+        </div>
+        <div class="rlog" id="gapLog"></div>
+        <div class="gap-grid">
+          <div>
+            <div class="panel-h"><span data-i18n="gapCov">Topic coverage</span></div>
+            <div id="gapCovWrap"></div>
+          </div>
+          <div>
+            <div class="panel-h"><span data-i18n="gapTopics">Gap topics · covered by competitors, missing on you</span></div>
+            <table class="tbl"><thead><tr><th data-i18n="thTopic">Topic</th><th data-i18n="thStrength">Depth</th></tr></thead>
+            <tbody id="gapBody"></tbody></table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ========== AUDIT ========== -->
+      <section class="view" id="view-audit">
+        <div class="kicker">site_audit</div>
+        <div class="lede" data-i18n="auLede">Real build audit against dist/ + sitemap.xml · 30+ checks across links, meta, images, structured data, GEO.</div>
+        <div class="lab-bar">
+          <div class="field"><label>dist</label><input type="text" id="auditDist" value="sample-dist"></div>
+          <div class="field"><label>sitemap</label><input type="text" id="auditSitemap" value="sample-dist/sitemap.xml"></div>
+          <button class="btn accent" id="auditBtn" data-i18n="auRun">Run audit</button>
+        </div>
+        <div class="rlog" id="auditLog"></div>
+        <div class="audit-top" id="auditTop" style="display:none">
+          <div class="ring">
+            <svg width="112" height="112"><circle class="rc" cx="56" cy="56" r="48"/><circle class="rv" cx="56" cy="56" r="48" stroke-dasharray="301.6" stroke-dashoffset="301.6" id="auditRing"/></svg>
+            <div class="rn"><b id="auditScoreN">·</b><span>/100</span></div>
+          </div>
+          <div class="audit-stats">
+            <div class="as"><b id="auErr">0</b><span data-i18n="auErrL">errors</span></div>
+            <div class="as"><b id="auWarn">0</b><span data-i18n="auWarnL">warnings</span></div>
+            <div class="as"><b id="auInfo">0</b><span data-i18n="auInfoL">info</span></div>
+            <div class="as"><b id="auFiles">0</b><span data-i18n="auFilesL">html files</span></div>
+            <div class="as"><b id="auUrls">0</b><span data-i18n="auUrlsL">sitemap urls</span></div>
+          </div>
+        </div>
+        <div id="auditGroups"></div>
+        <hr class="hairline">
+        <div class="panel-h"><span>content_qc · pre-publish gate (14 weighted checks)</span></div>
+        <div class="lab-bar">
+          <div class="field" style="flex:1;min-width:280px"><label data-i18n="qcLabel">Paste draft</label>
+            <textarea id="qcText" data-i18n-ph="qcPh" placeholder="paste your markdown / html draft…" style="min-height:110px"></textarea>
+          </div>
+          <div class="field"><label>Format</label>
+            <select id="qcFmt"><option value="md" selected>markdown</option><option value="html">html</option></select>
+          </div>
+          <button class="btn accent" id="qcBtn" data-i18n="qcRun">Check draft</button>
+        </div>
+        <div class="rlog" id="qcLog"></div>
+        <div id="qcOut"></div>
+      </section>
+
+      <!-- ========== GEO ========== -->
+      <section class="view" id="view-geo">
+        <div class="kicker">ai_crawler_audit</div>
+        <div class="lede" data-i18n="geoLede">Live fetch of any site's robots.txt + llms.txt layers. Can AI answer engines see you, crawl you, cite you?</div>
+        <div class="lab-bar">
+          <div class="field"><label>URL</label><input type="text" class="urlbar" id="geoUrl" value="https://zens.ink"></div>
+          <button class="btn accent" id="geoBtn" data-i18n="geoRun">Audit</button>
+        </div>
+        <div class="rlog" id="geoLog"></div>
+        <div class="geo-grid" id="geoGrid" style="display:none">
+          <div>
+            <div class="panel-h"><span data-i18n="geoCrawl">robots.txt · AI crawler policy (live)</span></div>
+            <table class="tbl crawl-tbl"><thead><tr><th data-i18n="thBot">Bot</th><th data-i18n="thCompany">Company</th><th data-i18n="thPolicy">Policy</th></tr></thead>
+            <tbody id="crawlBody"></tbody></table>
+          </div>
+          <div>
+            <div class="panel-h"><span data-i18n="geoScore">AI readiness</span></div>
+            <div class="ring-wrap">
+              <div class="ring">
+                <svg width="112" height="112"><circle class="rc" cx="56" cy="56" r="48"/><circle class="rv" cx="56" cy="56" r="48" stroke-dasharray="301.6" stroke-dashoffset="301.6" id="geoRing"/></svg>
+                <div class="rn"><b id="geoScoreN">·</b><span>/100</span></div>
+              </div>
+              <ul style="flex:1" id="geoLlms"></ul>
+            </div>
+            <div class="panel-h"><span data-i18n="geoNotes">Engine notes</span></div>
+            <ul id="geoNotes"></ul>
+          </div>
+        </div>
+        <hr class="hairline">
+        <div class="panel-h"><span>geo_fanout · Query Fan-out planning</span></div>
+        <div class="lab-bar">
+          <div class="field"><label data-i18n="kwSeed">Seed keyword</label><input type="text" id="fanoutKw" value="tarot"></div>
+          <div class="field"><label>ICP</label><input type="text" id="fanoutIcp" placeholder="indie builders"></div>
+          <button class="btn accent" id="fanoutBtn" data-i18n="foRun">Generate fan-out</button>
+        </div>
+        <div class="rlog" id="fanoutLog"></div>
+        <div id="fanoutOut"></div>
+        <hr class="hairline">
+        <div class="panel-h"><span>llms_gen · generate llms.txt from a live sitemap</span></div>
+        <div class="lab-bar">
+          <button class="btn" id="llmgenBtn" data-i18n="lgRun">Generate llms.txt</button>
+          <span class="mx-tip mono" id="llmgenNote" style="padding-bottom:10px"></span>
+        </div>
+        <div class="llms-box" id="llmgenBox" style="display:none"></div>
+      </section>
+
+      <!-- ========== RANKS ========== -->
+      <section class="view" id="view-ranks">
+        <div class="kicker">rank_tracker</div>
+        <div class="lede" data-i18n="rkLede">Real Google positions via Serper, history in SQLite (~/.zens_ink/ranks.db). Needs SERPER_API_KEY.</div>
+        <div class="lab-bar">
+          <div class="field"><label>Domain</label><input type="text" id="rankDomain" value="zens.ink"></div>
+          <div class="field" style="flex:1;min-width:260px"><label data-i18n="rkKws">Keywords</label>
+            <div class="tags" id="rankTags">
+              <input type="text" id="rankTagInput" data-i18n-ph="rkTagPh" placeholder="add keyword ↵" autocomplete="off" spellcheck="false">
+            </div>
+          </div>
+          <button class="btn accent" id="rankBtn" data-i18n="rkRun">Check now</button>
+        </div>
+        <div class="rlog" id="rankLog"></div>
+        <table class="tbl" id="rankTable" style="display:none"><thead><tr>
+          <th data-i18n="thKw">Keyword</th><th data-i18n="thPos">Position</th>
+          <th data-i18n="thUrl">Ranking URL</th><th data-i18n="thTrend">History</th>
+        </tr></thead><tbody id="rankBody"></tbody></table>
+        <hr class="hairline">
+        <div class="panel-h"><span>search_performance · Google Search Console (90d)</span></div>
+        <div class="lab-bar">
+          <button class="btn" id="gscBtn" data-i18n="gscRun">Load from GSC</button>
+          <span class="mx-tip mono" id="gscNote" style="padding-bottom:10px"></span>
+        </div>
+        <div class="rlog" id="gscLog"></div>
+        <div id="gscOut"></div>
+      </section>
+
+      <!-- ========== SETTINGS ========== -->
+      <section class="view" id="view-settings">
+        <div class="kicker">config · .env</div>
+        <div class="lede" data-i18n="setLede">Paste a key once. It lands in the package .env and hot-applies to every loaded tool. No restart needed.</div>
+        <div class="rlog" id="setLog"></div>
+        <div id="setGrid" style="margin-top:20px"></div>
+        <div class="lab-bar" style="margin-top:6px">
+          <button class="btn accent" id="saveKeysBtn" data-i18n="setSave">Save &amp; apply</button>
+          <span class="mx-tip mono" id="setEnvPath" style="padding-bottom:10px"></span>
+        </div>
+        <hr class="hairline">
+        <div class="panel-h"><span data-i18n="setGscT">Google Search Console</span></div>
+        <p class="dr-note" style="max-width:560px" data-i18n="setGscN">GSC uses OAuth, not a paste-able key. Run python3 -m zens_ink.setup_gsc once on this machine, then search_performance picks it up automatically.</p>
+        <hr class="hairline">
+        <div class="panel-h"><span data-i18n="setProT">Pro license</span></div>
+        <p class="dr-note" style="max-width:560px" id="licState">·</p>
+        <div class="lab-bar">
+          <div class="field" style="flex:1;min-width:260px">
+            <label data-i18n="proKeyPh">license key</label>
+            <input type="password" id="licKey" class="ukin" autocomplete="off" placeholder="license key">
+          </div>
+          <button class="btn accent" id="licUnlock" data-i18n="setProVerify">Verify &amp; unlock</button>
+          <button class="btn" id="licRemove" data-i18n="setProRemove" style="display:none">Remove license</button>
+        </div>
+      </section>
+
+      <div class="footnote">
+        <span>ZensInk WebUI</span><span>·</span>
+        <span id="fnMode" data-i18n="fnLive">live engine · every call hits the real zens_ink package</span>
+        <span>·</span><span>zens.ink</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<aside id="drawer">
+  <div class="dr-h"><h3 id="drTitle">·</h3><button class="dr-x" id="drClose">×</button></div>
+  <div class="dr-b" id="drBody"></div>
+</aside>
+
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+/* ================================================================
+   ZensInk WebUI · LIVE mode talks to server.py (real zens_ink
+   engine). If the server is unreachable (file:// etc.) every view
+   falls back to the offline demo simulation.
+   ================================================================ */
+
+/* ---------- i18n ---------- */
+const I18N = {
+  en:{brandSub:"WebUI",navWorkspace:"Workspace",navDash:"Dashboard",navKw:"Keyword Lab",
+    navClu:"Clusters",navGap:"Competitor Gap",navSite:"Site",navAudit:"Site Audit",navGeo:"GEO / AI",
+    navRank:"Rank Tracker",keysTitle:"API keys (.env)",demoBadge:"Demo data",
+    dashKick:"Workspace overview",
+    dashLede:"The same engine as the CLI · Google Autocomplete, Bing, Serper, GSC · now with buttons.",
+    stKw:"keywords discovered (session)",stClu:"clusters",stIss:"audit issues found",stGeo:"AI readiness (zens.ink)",
+    recentRuns:"This session",dashEmpty:"run a tool and it lands here",dashHint:"Try first",
+    dashT1:"Keyword Lab → run \"tarot\"",dashT2:"GEO / AI → audit zens.ink",dashT3:"Site Audit → sample-dist",
+    kwLede:"Seed a topic. Google Autocomplete expands it, intent gets classified locally; volume and KD light up when keys are present.",
+    kwSeed:"Seed keyword",kwCountry:"Country",kwExpand:"a–z long-tail expansion (slow, real)",kwZh:"中文 mode (--zh)",kwRun:"Run pipeline",
+    fSearchPh:"filter keywords…",fAll:"all intents",fAnyKd:"any KD",exportCsv:"Export CSV",
+    thKw:"Keyword",thVol:"Volume",thKd:"KD",thIntent:"Intent",thConf:"Conf.",thTopic:"Topic",thStrength:"Depth",
+    thBot:"Bot",thCompany:"Company",thPolicy:"Policy",thPos:"Position",thUrl:"Ranking URL",thTrend:"History",
+    clLede:"Harvested keywords from Keyword Lab, clustered by token similarity · greedy centroid assignment, same as the CLI.",
+    clRun:"Cluster harvested keywords",clEmpty:"No harvest yet · run Keyword Lab first.",
+    gapLede:"Real sitemaps, one diff. Topics every competitor covers that you don't · the honest content gap.",
+    gapYours:"Your sitemap",gapC1:"Competitor 1",gapC2:"Competitor 2",gapRun:"Run diff",
+    gapCov:"Topic coverage",gapTopics:"Gap topics · covered by competitors, missing on you",gapNone:"No gap topics · you cover the union.",
+    auLede:"Real build audit against dist/ + sitemap.xml · 30+ checks across links, meta, images, structured data, GEO.",
+    auRun:"Run audit",auErrL:"errors",auWarnL:"warnings",auInfoL:"info",auFilesL:"html files",auUrlsL:"sitemap urls",
+    auByCheck:"Checks",
+    auScore:"derived from issue severity",auAll:"all checks passed on this build",
+    geoLede:"Live fetch of any site's robots.txt + llms.txt layers. Can AI answer engines see you, crawl you, cite you?",
+    geoRun:"Audit",geoCrawl:"robots.txt · AI crawler policy (live)",geoScore:"AI readiness",
+    geoNotes:"Engine notes",geoLlmsTxt:"llms.txt",geoLlmsFull:"llms-full.txt",
+    rkLede:"Real Google positions via Serper, history in SQLite (~/.zens_ink/ranks.db). Needs SERPER_API_KEY.",
+    rkKws:"Keywords",rkTagPh:"add keyword ↵",rkRun:"Check now",rkNotFound:"not in top 20",
+    fnLive:"live engine · every call hits the real zens_ink package",fnOffline:"offline demo · simulated data, start server.py for live mode",
+    drVerdict:"Verdict",drSerp:"SERP structure",drTop:"Top-10 results",drSignals:"Signals",drErr:"Engine says",
+    drSim:"simulated fallback · set API keys in .env for real data",
+    tCsv:"CSV exported (demo)",tConn:"Live engine connected · zens-ink ",tOffline:"Engine offline · demo mode",
+    navSys:"System",navSet:"Settings",vSet:"Settings",
+    kwSource:"Source",thOpp:"Opp",thPage:"Page",thScore:"Score",opWeakest:"weakest dimension",
+    drSi:"what the SERP actually rewards",drSiDominant:"dominant intent",drSiFormat:"content format",drSiRisk:"AI Overview risk",
+    foRun:"Generate fan-out",foGold:"gold mines · high intent, low competition",foNoGold:"no gold mines at this seed",foDims:"sub-queries by intent dimension",
+    lgRun:"Generate llms.txt",
+    qcRun:"Check draft",qcLabel:"Paste draft",qcPh:"paste your markdown / html draft…",qcScore:"draft score",qcWords:"words",
+    gscRun:"Load from GSC",
+    navPro:"Pro engine",proUnlock:"Unlock",proRun:"Run",
+    proKeyPh:"license key (from purchase email)",
+    proLockedDesc:"Pro tools need a valid zens.ink license — Pro 1-Year or Lifetime. Verified online, saved locally.",
+    proMissing:"zens_ink_pro package not found · place it next to the repo to use Pro",
+    proUnlocked:"Pro unlocked",
+    proWiring:"engine wiring in progress · this panel is next",
+    proVer:"detected locally:",
+    mxTitle:"priority queue",mxClusters:"cluster-level opportunity",mxNeedKgr:"content_matrix needs KGR-scored keywords · run Keyword Lab with a BING key, then cluster here",
+    setLede:"Paste a key once. It lands in the package .env and hot-applies to every loaded tool. No restart needed.",
+    setNotSet:"not set",setUnlocks:"unlocks",setGetKey:"get a free key",
+    setPastePh:"paste key…",setReplacePh:"replace key…",setSave:"Save & apply",setClear:"clear",
+    setSaved:"keys saved · hot-applied to engine",setCleared:"key cleared",
+    setProT:"Pro license",setProOff:"Not unlocked — paste your license key (Pro 1-Year or Lifetime, from zens.ink)",
+    setProOn:"Unlocked",setProVerify:"Verify & unlock",setProRemove:"Remove license",
+    setGscT:"Google Search Console",
+    setGscN:"GSC uses OAuth, not a paste-able key. Run python3 -m zens_ink.setup_gsc once on this machine, then search_performance picks it up automatically.",
+    setOffline:"Engine offline · start server.py to manage keys here.",
+    vDash:"Dashboard",vKw:"Keyword Lab",vClu:"Clusters",vGap:"Competitor Gap",vAudit:"Site Audit",vGeo:"GEO / AI",vRank:"Rank Tracker"},
+  zh:{brandSub:"WebUI",navWorkspace:"工作台",navDash:"总览",navKw:"关键词实验室",
+    navClu:"主题聚类",navGap:"竞品差距",navSite:"站点",navAudit:"站点审计",navGeo:"GEO / AI",
+    navRank:"排名追踪",keysTitle:"API 密钥 (.env)",demoBadge:"演示数据",
+    dashKick:"工作台总览",
+    dashLede:"与 CLI 同一引擎 —— Google Autocomplete、Bing、Serper、GSC —— 现在有了按钮。",
+    stKw:"本次发现关键词",stClu:"聚类",stIss:"审计问题数",stGeo:"AI 就绪度（zens.ink）",
+    recentRuns:"本次会话",dashEmpty:"· 跑一个工具，记录会出现在这里 ·",dashHint:"先试试",
+    dashT1:"关键词实验室 → 跑 \"tarot\"",dashT2:"GEO / AI → 审计 zens.ink",dashT3:"站点审计 → sample-dist",
+    kwLede:"输入主题。Google Autocomplete 负责扩展，意图本地分类；配好密钥后搜索量和 KD 自动点亮。",
+    kwSeed:"种子关键词",kwCountry:"国家",kwExpand:"a–z 长尾扩展（真实但较慢）",kwZh:"中文模式 (--zh)",kwRun:"运行流水线",
+    fSearchPh:"筛选关键词…",fAll:"全部意图",fAnyKd:"不限难度",exportCsv:"导出 CSV",
+    thKw:"关键词",thVol:"搜索量",thKd:"难度",thIntent:"意图",thConf:"置信度",thTopic:"主题",thStrength:"深度",
+    thBot:"爬虫",thCompany:"公司",thPolicy:"策略",thPos:"排名",thUrl:"排名 URL",thTrend:"历史",
+    clLede:"关键词实验室收割的词按词元相似度聚类 —— 贪心质心分配，与 CLI 完全一致。",
+    clRun:"聚类已收割的关键词",clEmpty:"还没有词 —— 先去关键词实验室跑一轮。",
+    gapLede:"真实站点地图做 diff。竞品全覆盖而你缺失的主题 —— 诚实的内容差距。",
+    gapYours:"你的 sitemap",gapC1:"竞品 1",gapC2:"竞品 2",gapRun:"开始对比",
+    gapCov:"主题覆盖度",gapTopics:"差距主题 —— 竞品有、你没有",gapNone:"没有差距主题 —— 你已覆盖并集。",
+    auLede:"对 dist/ + sitemap.xml 做真实构建审计 —— 链接、meta、图片、结构化数据、GEO 共 30+ 项。",
+    auRun:"开始审计",auErrL:"错误",auWarnL:"警告",auInfoL:"提示",auFilesL:"html 文件",auUrlsL:"sitemap 链接",
+    auByCheck:"检查项",
+    auScore:"按问题严重度推算",auAll:"此构建全部检查通过",
+    geoLede:"实时抓取任意站点的 robots.txt + llms.txt。AI 搜索引擎能看见你、抓取你、引用你吗？",
+    geoRun:"审计",geoCrawl:"robots.txt · AI 爬虫策略（实时）",geoScore:"AI 就绪度",
+    geoNotes:"引擎备注",geoLlmsTxt:"llms.txt",geoLlmsFull:"llms-full.txt",
+    rkLede:"通过 Serper 查真实 Google 排名，历史存 SQLite（~/.zens_ink/ranks.db）。需要 SERPER_API_KEY。",
+    rkKws:"关键词",rkTagPh:"输入关键词回车添加",rkRun:"立即检查",rkNotFound:"未进前 20",
+    fnLive:"live 引擎 —— 每次调用都跑真实的 zens_ink 包",fnOffline:"离线演示 —— 模拟数据，启动 server.py 进入 live 模式",
+    drVerdict:"判定",drSerp:"SERP 结构",drTop:"前 10 结果",drSignals:"信号",drErr:"引擎返回",
+    drSim:"模拟回退 —— 在 .env 配置密钥可得真实数据",
+    tCsv:"CSV 已导出（演示）",tConn:"已连接 live 引擎 · zens-ink ",tOffline:"引擎离线 —— 演示模式",
+    navSys:"系统",navSet:"设置",vSet:"设置",
+    kwSource:"来源",thOpp:"机会",thPage:"页面",thScore:"得分",opWeakest:"最弱维度",
+    drSi:"SERP 实际奖励什么",drSiDominant:"主导意图",drSiFormat:"内容形态",drSiRisk:"AI Overview 风险",
+    foRun:"生成 Fan-out",foGold:"金矿 · 高意图低竞争",foNoGold:"该种子词暂无金矿",foDims:"按意图维度的子查询分布",
+    lgRun:"生成 llms.txt",
+    qcRun:"检查草稿",qcLabel:"粘贴草稿",qcPh:"粘贴 markdown / html 草稿…",qcScore:"草稿得分",qcWords:"词",
+    gscRun:"从 GSC 加载",
+    navPro:"Pro 引擎",proUnlock:"解锁",proRun:"运行",
+    proKeyPh:"许可证密钥（见购买邮件）",
+    proLockedDesc:"Pro 工具需要有效的 zens.ink 许可证（一年版或终身版）。联网验证，本地保存。",
+    proMissing:"未找到 zens_ink_pro 包 · 放到仓库旁边即可使用 Pro",
+    proUnlocked:"Pro 已解锁",
+    proWiring:"引擎接线中 · 该面板即将就绪",
+    proVer:"本地检测到：",
+    mxTitle:"优先级队列",mxClusters:"聚类级机会",mxNeedKgr:"content_matrix 需要 KGR 评分后的关键词 · 用 BING 密钥跑一轮关键词实验室，再来这里聚类",
+    setLede:"密钥只需粘贴一次。写入包的 .env 并热生效到所有已加载工具，无需重启。",
+    setNotSet:"未设置",setUnlocks:"点亮",setGetKey:"获取免费密钥",
+    setPastePh:"粘贴密钥…",setReplacePh:"替换密钥…",setSave:"保存并生效",setClear:"清除",
+    setSaved:"密钥已保存 · 已热生效",setCleared:"密钥已清除",
+    setProT:"Pro 许可证",setProOff:"未解锁——粘贴许可证密钥（一年版或终身版，购于 zens.ink）",
+    setProOn:"已解锁",setProVerify:"验证并解锁",setProRemove:"移除许可证",
+    setGscT:"Google Search Console",
+    setGscN:"GSC 走 OAuth，不是可粘贴的密钥。在本机运行一次 python3 -m zens_ink.setup_gsc，search_performance 即可自动识别。",
+    setOffline:"引擎离线 · 启动 server.py 后可在此管理密钥。",
+    vDash:"总览",vKw:"关键词实验室",vClu:"主题聚类",vGap:"竞品差距",vAudit:"站点审计",vGeo:"GEO / AI",vRank:"排名追踪"}
+};
+let LANG='en';
+function T(k){return I18N[LANG][k]||I18N.en[k]||k}
+function applyLang(l){
+  LANG=l; document.documentElement.lang=l==='zh'?'zh-CN':'en';
+  document.querySelectorAll('[data-i18n]').forEach(el=>{const k=el.getAttribute('data-i18n');if(I18N[l][k])el.textContent=I18N[l][k]});
+  document.querySelectorAll('[data-i18n-ph]').forEach(el=>{const k=el.getAttribute('data-i18n-ph');if(I18N[l][k])el.placeholder=I18N[l][k]});
+  document.getElementById('langEn').classList.toggle('on',l==='en');
+  document.getElementById('langZh').classList.toggle('on',l==='zh');
+  setView(CURRENT_VIEW);
+}
+document.getElementById('langEn').onclick=()=>applyLang('en');
+document.getElementById('langZh').onclick=()=>applyLang('zh');
+
+/* ---------- toast / session stats ---------- */
+let toastT;
+function toast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),3000);
+}
+const STATS={kw:0,clusters:0,issues:null,geo:null};
+function pushRun(cmd,dur){
+  const ul=document.getElementById('dashRuns');
+  if(ul.dataset.clean!=='1'){ul.innerHTML='';ul.dataset.clean='1'}
+  const now=new Date();
+  const li=document.createElement('li');
+  li.innerHTML=`<span class="t">${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}</span>
+    <span class="cmd"></span><span class="ok">✓</span><span class="dur">${dur}</span>`;
+  li.querySelector('.cmd').textContent=cmd;
+  ul.prepend(li);
+}
+function refreshStats(){
+  document.getElementById('stKw').textContent=STATS.kw?STATS.kw.toLocaleString():'·';
+  document.getElementById('stClusters').textContent=STATS.clusters||'·';
+  document.getElementById('stIssues').textContent=STATS.issues??'·';
+  document.getElementById('stGeo').innerHTML=(STATS.geo??'·')+'<em>/100</em>';
+}
+
+/* ---------- API layer ---------- */
+let LIVE=false, KEYS={};
+async function api(path,body,timeoutMs=150000){
+  try{
+    const isGet=!body;
+    const ctl=new AbortController();
+    const t=setTimeout(()=>ctl.abort(),timeoutMs);
+    const r=await fetch('/api/'+path,{
+      method:isGet?'GET':'POST',
+      headers:{'Content-Type':'application/json'},
+      body:isGet?undefined:JSON.stringify(body||{}),
+      signal:ctl.signal
+    });
+    clearTimeout(t);
+    return await r.json();
+  }catch(e){return {ok:false,offline:true,error:String(e)}}
+}
+
+/* ---------- view router ---------- */
+const VIEW_META={
+  dashboard:{cli:'zens-ink --help',titleKey:'vDash'},
+  keywords:{cli:'zens-ink keyword_research "tarot"',titleKey:'vKw'},
+  clusters:{cli:'zens-ink keyword_cluster keywords.csv',titleKey:'vClu'},
+  gap:{cli:'zens-ink competitor_gap --url sitemap.xml --compare …',titleKey:'vGap'},
+  audit:{cli:'zens-ink site_audit --dist sample-dist --sitemap sample-dist/sitemap.xml',titleKey:'vAudit'},
+  geo:{cli:'zens-ink ai_crawler_audit --url https://zens.ink',titleKey:'vGeo'},
+  ranks:{cli:'zens-ink rank_tracker check --domain zens.ink',titleKey:'vRank'},
+  settings:{cli:'zens-ink config · .env',titleKey:'vSet'},
+};
+let CURRENT_VIEW='dashboard';
+function setView(v){
+  CURRENT_VIEW=v;
+  document.querySelectorAll('.nav a').forEach(a=>a.classList.toggle('active',a.dataset.view===v));
+  document.querySelectorAll('.view').forEach(s=>s.classList.remove('active'));
+  const sec=document.getElementById('view-'+v);
+  sec.classList.remove('active');void sec.offsetWidth;sec.classList.add('active');
+  const m=VIEW_META[v]||{};
+  document.getElementById('viewTitle').textContent=m.titleKey?T(m.titleKey):(m.title||v);
+  document.getElementById('cliChip').textContent=m.cli||'';
+}
+document.getElementById('nav').addEventListener('click',e=>{
+  const a=e.target.closest('a[data-view]');if(a)setView(a.dataset.view);
+});
+function animateRing(id,frac){
+  const el=document.getElementById(id);if(!el)return;
+  const C=2*Math.PI*48;el.style.strokeDashoffset=C;
+  requestAnimationFrame(()=>el.style.strokeDashoffset=C*(1-frac));
+}
+
+/* ---------- terminal helper ---------- */
+function termLine(body,cls){
+  const d=document.createElement('div');d.className='ln '+(cls||'');d.textContent=body;
+  const tb=document.getElementById('termBody');
+  tb.appendChild(d);tb.scrollTop=tb.scrollHeight;return d;
+}
+
+/* ================================================================
+   KEYWORD LAB
+   ================================================================ */
+const KWROWS=[];        // {kw,intent,confidence,vol,kd,kdData}
+const KDCACHE={};       // kw -> kd result
+let running=false;
+
+const MOCK_KW=[
+  {kw:'tarot spread for self love',vol:1900,kd:12,intent:'informational',confidence:.85},
+  {kw:'daily tarot pull ritual',vol:880,kd:8,intent:'informational',confidence:.85},
+  {kw:'tarot business pricing',vol:720,kd:11,intent:'commercial',confidence:.85},
+  {kw:'tarot vs oracle cards',vol:1600,kd:15,intent:'informational',confidence:.5},
+  {kw:'rider waite tarot guide',vol:2400,kd:19,intent:'informational',confidence:.5},
+  {kw:'tarot cards for beginners',vol:8100,kd:24,intent:'informational',confidence:.5},
+  {kw:'how to read tarot cards',vol:9900,kd:31,intent:'informational',confidence:.5},
+  {kw:'celtic cross spread explained',vol:3600,kd:27,intent:'informational',confidence:.5},
+  {kw:'buy tarot deck online',vol:2900,kd:22,intent:'transactional',confidence:.85},
+  {kw:'tarot card meanings',vol:33100,kd:47,intent:'informational',confidence:.5},
+  {kw:'tarot reading',vol:60500,kd:68,intent:'informational',confidence:.5},
+  {kw:'free tarot reading',vol:74000,kd:81,intent:'transactional',confidence:.5},
+];
+
+function kdClass(kd){return kd==null?'':kd<=30?'st0':kd<=55?'st1':'st2'}
+function intentChip(it){
+  const cls=it==='informational'?'info':it==='commercial'?'comm':it==='transactional'?'tran':'nav';
+  return `<span class="chip ${cls}">${it||'·'}</span>`;
+}
+function tierCls(t){return t==='P0'||t==='P1'?'st0':t==='P2'?'st1':''}
+function rowHtml(r,i){
+  let vol;
+  if(r.vol!=null)vol=(r.vol>=1000?(r.vol/1000).toFixed(1)+'k':r.vol);
+  else if(r.volD!=null)vol=`<span title="relative demand 0-100 (brave)" style="color:var(--ink-500)">d·${r.volD}</span>`;
+  else vol='·';
+  const kd=r.kd!=null?`<div class="kdbar"><div class="track"><div class="fill" style="width:${r.kd}%;opacity:${.35+.65*r.kd/100}"></div></div><span class="v ${kdClass(r.kd)}">${r.kd}</span></div>`:'<span class="num" style="color:var(--ink-500)">·</span>';
+  const opp=r.opp!=null?`<span class="num ${tierCls(r.opp.tier)}">${r.opp.score}<span style="color:var(--ink-300);margin-left:4px">${r.opp.tier}</span></span>`:'<span class="num" style="color:var(--ink-500)">·</span>';
+  return `<tr class="rowsel" data-i="${i}" tabindex="0">
+    <td class="kw">${r.kw}</td><td class="num">${vol}</td><td>${kd}</td><td>${opp}</td>
+    <td>${intentChip(r.intent)}</td><td class="num">${r.confidence!=null?r.confidence:'·'}</td>
+    <td class="num" style="color:var(--accent)">›</td></tr>`;
+}
+function renderKw(){
+  const q=document.getElementById('fSearch').value.trim().toLowerCase();
+  const it=document.getElementById('fIntent').value;
+  const maxKd=+document.getElementById('fKd').value;
+  const rows=KWROWS.map((r,i)=>[r,i]).filter(([r])=>
+    (!q||r.kw.toLowerCase().includes(q))&&(it==='all'||r.intent===it)&&(r.kd==null||r.kd<=maxKd));
+  document.getElementById('kwBody').innerHTML=rows.map(([r,i])=>rowHtml(r,i)).join('');
+  document.getElementById('rowCnt').textContent=KWROWS.length?rows.length+' / '+KWROWS.length:'';
+}
+['fSearch','fIntent','fKd'].forEach(id=>document.getElementById(id).addEventListener('input',renderKw));
+document.getElementById('csvBtn').onclick=()=>{
+  const lines=['keyword,volume,kd,intent,confidence'];
+  KWROWS.forEach(r=>lines.push(`"${r.kw}",${r.vol??''},${r.kd??''},${r.intent??''},${r.confidence??''}`));
+  const blob=new Blob([lines.join('\n')],{type:'text/csv'});
+  const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='zensink-keywords.csv';a.click();
+  toast(T('tCsv'));
+};
+
+/* run: live or offline */
+document.getElementById('runBtn').addEventListener('click',async()=>{
+  if(running)return;running=true;
+  KWROWS.length=0;Object.keys(KDCACHE).forEach(k=>delete KDCACHE[k]);
+  renderKw();
+  const seed=document.getElementById('seedInput').value.trim()||'tarot';
+  const expand=document.getElementById('expandChk').checked;
+  const zh=document.getElementById('zhChk').checked;
+  const country=document.getElementById('countrySel').value;
+  const btn=document.getElementById('runBtn');btn.disabled=true;
+  const term=document.getElementById('term'),tb=document.getElementById('termBody');
+  document.getElementById('termTitle').textContent='zens-ink · '+seed;
+  tb.innerHTML='';term.classList.add('show');
+
+  const cmd=`zens-ink keyword_research "${seed}"${expand?' --expand':''}${zh?' --zh':''} --country ${country}`;
+  if(LIVE){
+    termLine('$ '+cmd,'cmd');
+    let elapsed=0;
+    const prog=termLine('→ running','dim');
+    const tick=setInterval(()=>{elapsed+=2;prog.textContent=`→ running … ${elapsed}s (google autocomplete, real network)`},2000);
+    const t0=performance.now();
+    const res=await api('research',{seed,zh,expand,source:document.getElementById('sourceSel').value});
+    clearInterval(tick);prog.remove();
+    if(res.ok){
+      res.log.forEach(l=>{
+        const cls=l.startsWith('$')?'cmd':l.startsWith('✓')?'ok':l.startsWith('!')?'err':'';
+        termLine(l,cls);
+      });
+      res.keywords.forEach(k=>KWROWS.push({...k,vol:null,kd:null}));
+      STATS.kw+=res.total;refreshStats();
+      pushRun(cmd,((performance.now()-t0)/1000).toFixed(1)+'s');
+      renderKw();
+      document.getElementById('harvestCnt').textContent=res.harvest.length+' kw';
+      LAST_HARVEST=res.harvest;
+      await enrich(res.log.length);
+    }else{
+      termLine('✕ '+(res.error||'engine error'),'err');
+    }
+  }else{
+    await offlineRun(seed,expand,zh);
+  }
+  btn.disabled=false;running=false;
+});
+
+/* enrich rows with real kd / volume / kgr when keys allow */
+async function enrich(){
+  if(KEYS.serper){
+    termLine('$ zens-ink kd --serp  (auto, top rows)','dim');
+    for(let i=0;i<KWROWS.length&&i<6;i++){
+      const r=KWROWS[i];
+      const res=await api('kd',{keyword:r.kw},60000);
+      if(res.ok&&res.data&&res.data.kd!=null){
+        r.kd=Math.round(res.data.kd);
+        if(res.data.search_volume)r.vol=res.data.search_volume;
+        KDCACHE[r.kw]=res.data;
+        termLine(`→ "${r.kw}" … kd ${r.kd}${res.data.search_volume?' · vol '+res.data.search_volume:''}`);
+        renderKw();
+      }else{
+        termLine(`  ! ${r.kw}: ${res.error||'no data'}`,'err');
+      }
+    }
+    termLine('✓ kd done','ok');
+  }
+  if(KEYS.bing||KEYS.brave){
+    termLine('$ zens-ink keyword_volume / kgr_auto  (auto, top rows)','dim');
+    for(let i=0;i<KWROWS.length&&i<6;i++){
+      const r=KWROWS[i];
+      const vres=await api('volume',{keyword:r.kw,country:document.getElementById('countrySel').value,zh:document.getElementById('zhChk').checked},30000);
+      if(vres.ok){
+        if(vres.data.monthly_estimate!=null)r.vol=vres.data.monthly_estimate;
+        else if(vres.data.demand_score!=null)r.volD=vres.data.demand_score;
+      }
+      if(KEYS.bing){
+        const kres=await api('kgr',{keyword:r.kw,country:document.getElementById('countrySel').value,zh:document.getElementById('zhChk').checked},30000);
+        if(kres.ok&&kres.data)r.opp={score:Math.round(kres.data.opportunity_score),tier:kres.data.priority};
+      }
+      renderKw();
+    }
+    termLine('✓ volume' + (KEYS.bing?' + kgr':'') + ' done','ok');
+  }
+  if(!KEYS.serper&&!KEYS.bing&&!KEYS.brave){
+    termLine('· kd / volume / kgr: add keys in Settings (serper · bing · brave, all free tiers) to light up these columns','dim');
+  }
+}
+
+/* offline simulation */
+async function offlineRun(seed,expand,zh){
+  termLine(`$ zens-ink keyword_research "${seed}"${expand?' --expand':''}${zh?' --zh':''}`,'cmd');
+  termLine('→ engine offline · simulated run','dim');
+  const steps=[[`→ google autocomplete: "${seed}" … 8 suggestions`,420],[`→ a–z expansion: 26 prefixes … 214 raw keywords`,520],[`→ dedupe + clean … 137 keywords`,380]];
+  for(const [txt,d] of expand?steps:[[steps[0][0],420],['→ dedupe … 12 keywords',300]]){
+    termLine(txt,'dim');await new Promise(r=>setTimeout(r,d));
+  }
+  termLine('$ zens-ink search_intent','cmd');
+  termLine('→ 96 informational / 21 commercial / 20 transactional','dim');
+  MOCK_KW.forEach(r=>KWROWS.push({...r}));
+  renderKw();
+  for(let i=0;i<KWROWS.length;i++){
+    setTimeout(()=>{renderKw();if(i===KWROWS.length-1)termLine('✓ done · offline demo slice','ok')},i*80);
+  }
+  LAST_HARVEST=KWROWS.map(r=>r.kw);
+  document.getElementById('harvestCnt').textContent=LAST_HARVEST.length+' kw';
+  STATS.kw+=KWROWS.length;refreshStats();
+  pushRun('offline simulation', '·');
+}
+
+/* drawer: real SERP detail or honest error (+labeled sim offline) */
+document.getElementById('kwBody').addEventListener('click',async e=>{
+  const tr=e.target.closest('tr.rowsel');if(!tr)return;
+  const r=KWROWS[+tr.dataset.i];
+  openDrawerTitle(r.kw);
+  const body=document.getElementById('drBody');
+  body.innerHTML=`<p class="dr-note dim">${LIVE?'fetching SERP…':''}</p>`;
+  if(KDCACHE[r.kw]){renderKdDrawer(r.kw,KDCACHE[r.kw]);return}
+  if(LIVE){
+    const res=await api('kd',{keyword:r.kw},60000);
+    if(res.ok&&res.data&&res.data.kd!=null){KDCACHE[r.kw]=res.data;r.kd=Math.round(res.data.kd);renderKw();renderKdDrawer(r.kw,res.data);return}
+    body.innerHTML=`<div class="dr-sec">${T('drErr')}</div>
+      <p class="dr-note st2 mono" style="font-size:12.5px">${res.error||'no data'}</p>
+      <div class="dr-sec">${T('drVerdict')}<span class="simtag">${T('drSim')}</span></div>
+      ${simVerdict(r)}`;
+    attachSerpIntent(r.kw);
+    return;
+  }
+  body.innerHTML=`<div class="dr-sec">${T('drVerdict')}<span class="simtag">${T('drSim')}</span></div>${simVerdict(r)}`;
+});
+document.getElementById('kwBody').addEventListener('keydown',e=>{
+  if(e.key==='Enter'||e.key===' '){
+    const tr=e.target.closest('tr.rowsel');
+    if(tr){e.preventDefault();tr.click()}
+  }
+});
+function openDrawerTitle(kw){document.getElementById('drTitle').textContent=kw;document.getElementById('drawer').classList.add('open')}
+function simVerdict(r){
+  const v=r.kd<=30?`<span class="st0">Winnable.</span> SERP is forum-heavy · a structured, answer-first guide with schema can take a top-5 seat.`
+    :r.kd<=55?`<span class="st1">Contestable.</span> Mixed SERP. Needs internal links from your cluster + FAQ blocks.`
+    :`<span class="st2">Hard.</span> Big brands own the top-10. Target the long-tail around it instead.`;
+  return `<p class="dr-note">${v}</p>`;
+}
+function renderKdDrawer(kw,d){
+  const sa=d.serp_analysis||{};
+  const rows=[
+    ['homepages',sa.homepage_count],['dedicated pages',sa.dedicated_count],
+    ['inner pages',sa.inner_count],['platforms',sa.platform_count]];
+  const mx=Math.max(1,...rows.map(r=>r[1]||0));
+  const top=(d.results||[]).map(r=>`<div class="dr-kv"><span class="mono" style="font-size:11.5px;color:var(--ink-500)">#${r.position} ${r.domain}</span><b>${r.page_type} · ${r.authority}</b></div>`).join('');
+  document.getElementById('drBody').innerHTML=`
+    <div class="dr-sec">${T('drVerdict')} · kd ${d.kd} · ${LANG==='zh'?d.label:d.label_en||d.label}</div>
+    <p class="dr-note">${d.recommendation||''}</p>
+    ${d.is_brand_keyword?`<p class="dr-note st1">⌘ brand keyword · entry KD ${d.kd_entry??'?'} (${d.kd_entry_label_en||d.kd_entry_label||''})</p>`:''}
+    ${d.brand_warning?`<p class="dr-note st1">${d.brand_warning}</p>`:''}
+    <div class="dr-sec">${T('drSignals')}</div>
+    <div class="dr-kv"><span>search volume</span><b>${d.search_volume!=null?d.search_volume.toLocaleString():'·'}</b></div>
+    <div class="dr-kv"><span>link budget to compete</span><b>${d.link_budget!=null?Math.round(d.link_budget):'·'}</b></div>
+    <div class="dr-kv"><span>weak domains in top-10</span><b>${sa.weak_domain_count??'·'}${sa.weak_in_top5?' (in top-5!)':''}</b></div>
+    <div class="dr-kv"><span>avg domain age</span><b>${sa.avg_domain_age??'·'}</b></div>
+    <div class="dr-sec">${T('drSerp')}</div>
+    ${rows.map(([l,v])=>`<div class="serp-row"><span class="sl">${l}</span><div class="st"><div class="sf" style="width:${100*(v||0)/mx}%"></div></div><span class="sv">${v||0}</span></div>`).join('')}
+    <div class="dr-sec">${T('drTop')}</div>
+    ${top}
+    <p class="dr-note" style="margin-top:10px;color:var(--ink-500);font-size:12px">live SERP via serper.dev · ${d._elapsed}s</p>`;
+  attachSerpIntent(kw);
+}
+const SICACHE={};
+async function attachSerpIntent(kw){
+  if(!KEYS.serper)return;
+  if(SICACHE[kw]){paintSerpIntent(SICACHE[kw]);return}
+  const res=await api('serp_intent',{keyword:kw},60000);
+  if(!res.ok||!res.data)return;
+  SICACHE[kw]=res.data;
+  paintSerpIntent(res.data);
+}
+function paintSerpIntent(d){
+  let host=document.getElementById('drSerpIntent');
+  if(!host){
+    host=document.createElement('div');host.id='drSerpIntent';
+    document.getElementById('drBody').appendChild(host);
+  }
+  const lvl=d.ai_risk_level||'low';
+  const risk=`<span class="${lvl==='low'?'st0':lvl==='high'?'st2':'st1'}">${lvl}</span>`;
+  host.innerHTML=`
+    <div class="dr-sec">serp_intent · ${T('drSi')}</div>
+    <div class="dr-kv"><span>${T('drSiDominant')}</span><b>${d.dominant_intent||'·'}</b></div>
+    <div class="dr-kv"><span>${T('drSiFormat')}</span><b>${d.content_format||'·'}</b></div>
+    <div class="dr-kv"><span>${T('drSiRisk')}</span><b>${risk}</b></div>
+    ${d.is_mixed_intent?`<p class="dr-note st1" style="margin-top:8px">${d.split_advice||''}</p>`:''}`;
+}
+document.getElementById('drClose').onclick=()=>document.getElementById('drawer').classList.remove('open');
+document.addEventListener('keydown',e=>{if(e.key==='Escape')document.getElementById('drawer').classList.remove('open')});
+
+/* ================================================================
+   CLUSTERS
+   ================================================================ */
+let LAST_HARVEST=[];
+document.getElementById('clusterBtn').onclick=async()=>{
+  const log=document.getElementById('clusterLog');
+  const list=document.getElementById('clusterList');
+  if(!LAST_HARVEST.length){list.innerHTML=`<p class="dr-note" style="margin-top:20px">${T('clEmpty')}</p>`;return}
+  if(LIVE){
+    log.classList.add('show');log.innerHTML='<span class="dim">clustering…</span>';
+    const res=await api('cluster',{keywords:LAST_HARVEST});
+    if(res.ok){
+      log.innerHTML=res.log.map(l=>`<div class="${l.startsWith('$')?'':'dim'}">${l}</div>`).join('');
+      renderClusters(res.clusters);
+      STATS.clusters=res.clusters.length;refreshStats();
+      pushRun(`zens-ink keyword_cluster (${LAST_HARVEST.length} kw)`,'0.0s');
+    }else{log.innerHTML=`<span class="err">✕ ${res.error}</span>`}
+  }else{
+    renderClusters([
+      {label:'cards tarot beginners',size:3,members:['how to read tarot cards','tarot cards for beginners','tarot vs oracle cards']},
+      {label:'spread love tarot',size:2,members:['celtic cross spread','tarot spread for self love']},
+      {label:'tarot reading free',size:1,members:['free tarot reading']},
+      {label:'daily pull tarot',size:1,members:['daily tarot pull']},
+    ],true);
+  }
+};
+function renderClusters(clusters,sim){
+  const list=document.getElementById('clusterList');
+  if(!clusters.length){list.innerHTML=`<p class="dr-note" style="margin-top:20px">${T('gapNone')}</p>`;return}
+  list.innerHTML=clusters.map((c,ci)=>{
+    const vol=c.members.reduce((s,m)=>s+((KWROWS.find(r=>r.kw===m)||{}).vol||0),0);
+    const kds=c.members.map(m=>(KWROWS.find(r=>r.kw===m)||{}).kd).filter(k=>k!=null);
+    const ak=kds.length?Math.round(kds.reduce((a,b)=>a+b,0)/kds.length):null;
+    const prio=ak==null?'lo':ak<=25?'hi':ak<=45?'mid':'lo';
+    return `<div class="cl"><div class="cl-h">
+      <h3>${c.label}</h3>
+      <span class="meta">${c.size} kws${vol?` · Σvol ${vol.toLocaleString()}`:''}${ak!=null?` · avg kd ${ak}`:''}</span>
+      ${sim?'<span class="prio lo">sim</span>':`<span class="prio ${prio}">${prio}</span>`}
+      </div><div class="cl-kws">${c.members.slice(0,10).map(m=>`<span class="chip">${m}</span>`).join('')}</div></div>`;
+  }).join('');
+  renderMatrix(clusters);
+}
+/* content_matrix — priority queue over KGR-scored keywords */
+const MX_LABELS={P0_strike_now:'P0 · strike now',P1_do_soon:'P1 · do soon',P2_nice_to_have:'P2 · nice to have',P3_skip:'P3 · skip'};
+async function renderMatrix(clusters){
+  const out=document.getElementById('matrixOut');
+  const scored=KWROWS.filter(r=>r.opp).map(r=>({
+    keyword:r.kw,opportunity_score:r.opp.score,priority:r.opp.tier,
+    avg_weekly_volume:r.vol!=null?Math.round(r.vol/4.33):0}));
+  if(!scored.length){out.innerHTML=`<hr class="hairline"><p class="mx-tip">${T('mxNeedKgr')}</p>`;return}
+  const res=await api('matrix',{scores:scored,clusters:clusters||undefined});
+  if(!res.ok){out.innerHTML=`<hr class="hairline"><p class="mx-tip">${res.error}</p>`;return}
+  const d=res.data;
+  out.innerHTML=`<hr class="hairline">
+    <div class="panel-h"><span>content_matrix · ${T('mxTitle')} (${d.summary.total_keywords})</span></div>`+
+    Object.entries(d.buckets).map(([k,items])=>`
+      <div class="cl" style="padding:14px 0">
+        <div class="cl-h"><span class="nm" style="font-weight:600;font-size:14px;color:${k==='P0_strike_now'?'var(--good)':k==='P3_skip'?'var(--ink-500)':'var(--ink-700)'}">${MX_LABELS[k]}</span>
+        <span class="meta">${items.length}</span></div>
+        ${items.length?`<div class="cl-kws">${items.slice(0,12).map(r=>`<span class="chip ${k==='P0_strike_now'?'info':''}">${r.keyword}<b>${r.opportunity_score}</b></span>`).join('')}</div>`:`<span class="mx-tip">·</span>`}
+      </div>`).join('')+
+    (d.clusters&&d.clusters.length?`
+      <div class="panel-h" style="margin-top:26px"><span>${T('mxClusters')}</span></div>
+      <table class="tbl"><thead><tr><th>${T('thTopic')}</th><th>#</th><th>avg opp</th><th>max</th></tr></thead><tbody>
+      ${d.clusters.slice(0,8).map(c=>`<tr><td class="kw">${c.cluster}</td><td class="num">${c.keyword_count}</td>
+        <td class="num ${c.avg_opportunity>=60?'st0':c.avg_opportunity>=40?'st1':''}">${c.avg_opportunity}</td>
+        <td class="num">${c.max_opportunity}</td></tr>`).join('')}</tbody></table>`:'');
+  pushRun(`zens-ink content_matrix (${scored.length} kws)`,'0.0s');
+}
+
+/* ================================================================
+   GAP
+   ================================================================ */
+document.getElementById('gapBtn').onclick=async()=>{
+  const log=document.getElementById('gapLog');
+  const urls=[document.getElementById('gapYou').value,document.getElementById('gapC1').value,document.getElementById('gapC2').value].filter(Boolean);
+  if(LIVE){
+    log.classList.add('show');log.innerHTML='<span class="dim">fetching sitemaps… (real network)</span>';
+    document.getElementById('gapBtn').disabled=true;
+    const t0=performance.now();
+    const res=await api('gap',{urls});
+    document.getElementById('gapBtn').disabled=false;
+    if(res.ok){
+      log.innerHTML=res.log.map(l=>`<div class="${l.startsWith('✓')?'okl':l.startsWith('!')?'err':l.startsWith('$')?'':'dim'}">${l}</div>`).join('');
+      renderGap(res.sites,res.gaps);
+      pushRun('zens-ink competitor_gap ×'+res.sites.length,((performance.now()-t0)/1000).toFixed(1)+'s');
+      if(KEYS.ahrefs){  // real Domain Rating per site
+        document.querySelectorAll('#gapCovWrap .sitecov').forEach(async (el,ix)=>{
+          const host=res.sites[ix]&&res.sites[ix].host;
+          if(!host)return;
+          const sh=el.querySelector('.sh b');
+          const chip=document.createElement('span');
+          chip.className='chip';chip.textContent='DR …';chip.style.marginLeft='8px';
+          sh.appendChild(chip);
+          const d=await api('dr',{target:host},30000);
+          if(d.ok&&d.data&&d.data.domain_rating!=null){
+            chip.textContent='DR '+d.data.domain_rating;chip.classList.add('info');
+          }else chip.remove();
+        });
+      }
+    }else{log.innerHTML=`<span class="err">✕ ${res.error}</span>`}
+  }else{
+    renderGap(
+      [{host:'mysticlamp.com (you)',pages:128,coverage:34,cls:'you'},{host:'moonplanner.io',pages:486,coverage:92,cls:'c1'},{host:'lunatarot.co',pages:312,coverage:71,cls:'c2'}],
+      [{topic:'tarot for shadow work',strength:6},{topic:'moon phases and tarot',strength:4},{topic:'tarot journal prompts',strength:4},{topic:'cleansing new tarot deck',strength:3}]);
+  }
+};
+function renderGap(sites,gaps){
+  document.getElementById('gapCovWrap').innerHTML=sites.map((s,i)=>`
+    <div class="sitecov ${i===0?'you':i===1?'c1':'c2'}">
+      <div class="sh"><b>${s.host}${i===0?` ${T('youTag')||'(you)'}`:''}</b><span>${s.pages} urls · ${s.coverage}%</span></div>
+      <div class="track"><div class="fill" style="width:${s.coverage}%"></div></div>
+    </div>`).join('');
+  document.getElementById('gapBody').innerHTML=gaps.length
+    ?gaps.map(g=>`<tr><td class="kw">${g.topic}</td><td class="num">×${g.strength}</td></tr>`).join('')
+    :`<tr><td colspan="2" style="color:var(--ink-500)">${T('gapNone')}</td></tr>`;
+}
+I18N.en.youTag='(you)';I18N.zh.youTag='（你）';
+
+/* ================================================================
+   AUDIT
+   ================================================================ */
+document.getElementById('auditBtn').onclick=async()=>{
+  const log=document.getElementById('auditLog');
+  if(LIVE){
+    log.classList.add('show');log.innerHTML='<span class="dim">auditing build…</span>';
+    const dist=document.getElementById('auditDist').value.trim()||'sample-dist';
+    const sitemap=document.getElementById('auditSitemap').value.trim()||dist+'/sitemap.xml';
+    const res=await api('audit',{dist,sitemap});
+    if(res.ok){
+      log.innerHTML=res.log.map(l=>`<div class="${l.startsWith('✓')?'okl':l.startsWith('$')?'':'dim'}">${l}</div>`).join('');
+      renderAudit(res.data);
+      pushRun(`zens-ink site_audit --dist ${dist}`,res.data.elapsed+'s');
+    }else{log.innerHTML=`<span class="err">✕ ${res.error}</span>`}
+  }else{
+    toast(T('tOffline'));
+  }
+};
+function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function humanType(t){return String(t).replace(/_/g,' ').replace(/^\w/,c=>c.toUpperCase())}
+function renderAudit(data){
+  const s=data.summary;
+  document.getElementById('auditTop').style.display='flex';
+  const info=s.total_issues-s.errors-s.warnings;
+  document.getElementById('auErr').textContent=s.errors;
+  document.getElementById('auWarn').textContent=s.warnings;
+  document.getElementById('auInfo').textContent=info;
+  document.getElementById('auFiles').textContent=s.html_files;
+  document.getElementById('auUrls').textContent=s.sitemap_urls;
+  const score=Math.max(0,Math.min(100,Math.round(100-4*s.errors-1.2*s.warnings-.4*info)));
+  document.getElementById('auditScoreN').textContent=score;
+  animateRing('auditRing',score/100);
+  STATS.issues=s.total_issues;refreshStats();
+  const wrap=document.getElementById('auditGroups');
+  if(!s.total_issues){wrap.innerHTML=`<p class="dr-note st0" style="margin-top:30px">✓ ${T('auAll')}</p>`;return}
+
+  const rank={error:0,warning:1,info:2};
+  const byType={};
+  data.issues.forEach(i=>{(byType[i.type]=byType[i.type]||[]).push(i)});
+  const groups=Object.entries(byType)
+    .map(([type,items])=>({type,items,sev:items[0].severity}))
+    .sort((a,b)=>rank[a.sev]-rank[b.sev]||b.items.length-a.items.length||a.type.localeCompare(b.type));
+
+  wrap.innerHTML=
+    `<div class="panel-h"><span>${T('auByCheck')} · ${groups.length}</span></div>`+
+    groups.map(g=>`
+    <div class="ckgrp ${g.sev==='error'?'open':''}">
+      <div class="ckgrp-h" tabindex="0" role="button" aria-expanded="${g.sev==='error'}">
+        <span class="sev sev-${g.sev}"></span>
+        <span class="nm">${esc(humanType(g.type))}</span>
+        <span class="cnt">×${g.items.length}</span>
+        <span class="first"></span>
+        <span class="tw">›</span>
+      </div>
+      <div class="ckgrp-b">${g.items.map(i=>`
+        <div class="ckrow"><span class="pth" title="${esc(i.path)}">${esc(i.path)||'·'}</span><span class="dtl">${esc(i.detail)}</span></div>`).join('')}
+      </div>
+    </div>`).join('');
+
+  wrap.querySelectorAll('.ckgrp').forEach(g=>{
+    const p=g.querySelector('.ckrow .pth');
+    if(p)g.querySelector('.ckgrp-h .first').textContent=p.textContent;
+  });
+  wrap.querySelectorAll('.ckgrp-h').forEach(h=>{
+    const toggle=()=>h.parentElement.classList.toggle('open');
+    h.addEventListener('click',toggle);
+    h.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();toggle()}});
+  });
+
+  if(data.onpage&&data.onpage.pages&&data.onpage.pages.length){
+    const op=document.createElement('div');
+    op.innerHTML=`<div class="panel-h"><span>onpage_audit · per-page scores (${data.onpage.pages.length})</span></div>`+
+      `<div class="tblwrap"><table class="tbl"><thead><tr>
+        <th data-i18n="thPage">Page</th><th data-i18n="thScore">Score</th><th data-i18n="opWeakest">weakest dimension</th>
+      </tr></thead><tbody>`+
+      data.onpage.pages.map(p=>{
+        const dims=Object.entries(p.details||{}).map(([k,v])=>[k,v.max?v.score/v.max:0]);
+        dims.sort((a,b)=>a[1]-b[1]);
+        const w=dims[0]||['·',1];
+        const g=p.score>=70?'st0':p.score>=50?'st1':'st2';
+        return `<tr><td class="mono" style="font-size:11.5px;color:var(--ink-700)">${esc(p.path)}</td>
+          <td><div class="kdbar"><div class="track"><div class="fill" style="width:${p.score}%"></div></div><span class="v ${g}">${p.score}</span></div></td>
+          <td class="num" style="color:var(--ink-500)">${w[0]} · ${Math.round(w[1]*100)}%</td></tr>`;
+      }).join('')+`</tbody></table></div>`;
+    wrap.appendChild(op);
+  }
+}
+
+/* ================================================================
+   GEO
+   ================================================================ */
+document.getElementById('geoBtn').onclick=async()=>{
+  const log=document.getElementById('geoLog');
+  const url=document.getElementById('geoUrl').value.trim();
+  if(LIVE){
+    log.classList.add('show');log.innerHTML='<span class="dim">fetching robots.txt + llms.txt… (real)</span>';
+    document.getElementById('geoBtn').disabled=true;
+    const t0=performance.now();
+    const res=await api('geo',{url});
+    document.getElementById('geoBtn').disabled=false;
+    if(res.ok){
+      log.innerHTML=res.log.map(l=>`<div class="${l.startsWith('✓')?'okl':l.startsWith('$')?'':'dim'}">${l}</div>`).join('');
+      renderGeo(res.data);
+      pushRun(`zens-ink ai_crawler_audit --url ${url}`,((performance.now()-t0)/1000).toFixed(1)+'s');
+    }else{log.innerHTML=`<span class="err">✕ ${res.error}</span>`}
+  }else{toast(T('tOffline'))}
+};
+function statusClass(st){
+  if(/blocked/i.test(st))return'bad';
+  if(/unlisted|partial/i.test(st))return'mid';
+  return'ok';
+}
+function renderGeo(d){
+  document.getElementById('geoGrid').style.display='grid';
+  document.getElementById('crawlBody').innerHTML=(d.crawlers||[]).map(c=>`
+    <tr><td class="mono" style="font-size:12px">${c.ua}</td><td style="color:var(--ink-500)">${c.vendor}</td>
+    <td><span class="dotst ${statusClass(c.status)}"><i></i>${c.status}</span></td></tr>`).join('');
+  document.getElementById('geoScoreN').textContent=d.score;
+  animateRing('geoRing',d.score/100);
+  const l=d.llms||{};
+  document.getElementById('geoLlms').innerHTML=`
+    <li class="hlist-li dr-kv"><span>${T('geoLlmsTxt')}</span><b class="${l['llms.txt']?.status===200?'st0':'st2'}">HTTP ${l['llms.txt']?.status}</b></li>
+    <li class="hlist-li dr-kv"><span>${T('geoLlmsFull')}</span><b class="${l['llms-full.txt']?.status===200?'st0':'st2'}">HTTP ${l['llms-full.txt']?.status}</b></li>`;
+  document.getElementById('geoNotes').innerHTML=(d.notes||[]).map(n=>`<li class="note-li">${n}</li>`).join('');
+  STATS.geo=d.score;refreshStats();
+}
+
+/* ================================================================
+   RANKS
+   ================================================================ */
+const RANK_KWS=['seo tools for indie builders','free keyword research tool','llms.txt','open source seo tools'];
+function renderTags(){
+  const box=document.getElementById('rankTags');
+  box.querySelectorAll('.tag').forEach(t=>t.remove());
+  const inp=document.getElementById('rankTagInput');
+  RANK_KWS.forEach((k,i)=>{
+    const el=document.createElement('span');el.className='tag';
+    const txt=document.createElement('span');txt.textContent=k;
+    const x=document.createElement('button');x.textContent='×';x.title='remove';
+    x.setAttribute('aria-label','remove '+k);
+    x.onclick=()=>{RANK_KWS.splice(i,1);renderTags();inp.focus()};
+    el.append(txt,x);
+    box.insertBefore(el,inp);
+  });
+}
+document.getElementById('rankTagInput').addEventListener('keydown',e=>{
+  if(e.key==='Enter'||e.key===','){
+    e.preventDefault();
+    const v=e.target.value.trim().replace(/,+$/,'');
+    if(v){
+      if(RANK_KWS.length>=15){toast('max 15 keywords');return}
+      if(!RANK_KWS.includes(v))RANK_KWS.push(v);
+      renderTags();
+    }
+    e.target.value='';
+  }else if(e.key==='Backspace'&&!e.target.value&&RANK_KWS.length){
+    RANK_KWS.pop();renderTags();
+  }
+});
+document.getElementById('rankTags').addEventListener('click',e=>{
+  if(e.target===e.currentTarget)document.getElementById('rankTagInput').focus();
+});
+renderTags();
+document.getElementById('rankBtn').onclick=async()=>{
+  const log=document.getElementById('rankLog');
+  const domain=document.getElementById('rankDomain').value.trim();
+  const kws=RANK_KWS.slice();
+  if(LIVE){
+    log.classList.add('show');log.innerHTML='<span class="dim">checking real Google positions… (serper)</span>';
+    document.getElementById('rankBtn').disabled=true;
+    const t0=performance.now();
+    const res=await api('rank',{keywords:kws,domain});
+    document.getElementById('rankBtn').disabled=false;
+    if(res.ok){
+      log.innerHTML=res.log.map(l=>`<div class="${l.startsWith('✓')?'okl':l.startsWith('!')?'err':l.startsWith('$')?'':'dim'}">${l}</div>`).join('');
+      renderRanks(res.rows);
+      pushRun(`zens-ink rank_tracker check (${kws.length} kw)`,((performance.now()-t0)/1000).toFixed(1)+'s');
+    }else{log.innerHTML=`<span class="err">✕ ${res.error}</span>`}
+  }else{toast(T('tOffline'))}
+};
+function sparkline(hist,up){
+  if(!hist||hist.length<2)return'<span class="delta eq">·</span>';
+  const W=110,H=30,min=Math.min(...hist),max=Math.max(...hist);
+  const pts=hist.map((v,i)=>`${(i/(hist.length-1))*W},${H-3-((v-min)/(max-min||1))*(H-7)}`).join(' ');
+  return `<svg class="spark" width="${W}" height="${H}"><polyline points="${pts}" fill="none" stroke="${up?'var(--good)':'var(--bad)'}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+}
+function renderRanks(rows){
+  const tbl=document.getElementById('rankTable');
+  tbl.style.display='table';
+  document.getElementById('rankBody').innerHTML=rows.map(r=>{
+    const found=r.pos!=null&&r.pos>0;
+    const posCls=!found?'st2':r.pos<=10?'st0':r.pos<=20?'st1':'st2';
+    const up=r.hist.length>1&&r.hist[r.hist.length-1]<=r.hist[0];
+    return `<tr><td class="kw">${r.kw}</td>
+      <td class="num ${posCls}" style="font-size:15px">${found?'#'+r.pos:T('rkNotFound')}</td>
+      <td class="mono" style="font-size:11px;color:var(--ink-500);max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.url||'·'}</td>
+      <td>${sparkline(r.hist,up)}</td></tr>`;
+  }).join('');
+}
+
+/* ================================================================
+   FULL COVERAGE TOOLS · geo_fanout / llms_gen / content_qc / gsc
+   ================================================================ */
+/* geo_fanout */
+document.getElementById('fanoutBtn').onclick=async function(){
+  const kw=document.getElementById('fanoutKw').value.trim();
+  if(!kw)return;
+  const log=document.getElementById('fanoutLog'),out=document.getElementById('fanoutOut');
+  if(!LIVE){toast(T('tOffline'));return}
+  log.classList.add('show');log.innerHTML='<span class="dim">generating fan-out tree · live autocomplete validation (can take ~1-2 min)…</span>';
+  out.innerHTML='';this.disabled=true;
+  const t0=performance.now();
+  const res=await api('fanout',{keyword:kw,icp:document.getElementById('fanoutIcp').value.trim()},300000);
+  this.disabled=false;
+  if(!res.ok){log.innerHTML=`<span class="err">✕ ${res.error}</span>`;return}
+  log.innerHTML=res.log.map(l=>`<div class="${l.startsWith('✓')?'okl':l.startsWith('$')?'':'dim'}">${l}</div>`).join('');
+  pushRun(`zens-ink geo_fanout "${kw}"`,((performance.now()-t0)/1000).toFixed(0)+'s');
+  const d=res.data;
+  const gm=(d.gold_mines||[]).slice(0,10).map(g=>{
+    const q=typeof g==='string'?g:(g.query||g.keyword||'');
+    const s=(g&&g.gold_score!=null)?`<b style="margin-left:6px;color:var(--good)">${g.gold_score}</b>`:'';
+    return q?`<span class="chip info">${q}${s}</span>`:'';
+  }).join('');
+  const dims=(d.sub_queries||[]).reduce((acc,q)=>{
+    const dim=q.dimension||q.intent||'other';acc[dim]=(acc[dim]||0)+1;return acc;
+  },{});
+  out.innerHTML=`
+    <div class="panel-h"><span>${T('foGold')} · ${d.gold_mine_count}</span></div>
+    <div class="cl-kws" style="margin-bottom:14px">${gm||`<span class="mx-tip">${T('foNoGold')}</span>`}</div>
+    <div class="panel-h"><span>${T('foDims')}</span></div>
+    <div class="cl-kws">${Object.entries(dims).map(([k,n])=>`<span class="chip">${k}<b>${n}</b></span>`).join('')}</div>`;
+};
+/* llms_gen (real) */
+function renderLlmsText(t){
+  return t.split('\n').map(line=>{
+    const e=s=>String(s).replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]));
+    if(/^# [^#]/.test(line))return `<div class="h1">${e(line.slice(2))}</div>`;
+    if(/^## /.test(line))return `<div class="h2">${e(line)}</div>`;
+    if(/^> /.test(line))return `<div class="c">${e(line)}</div>`;
+    const m=line.match(/^- \[([^\]]+)\]\(([^)]+)\)(.*)$/);
+    if(m)return `<div>- <a href="${m[2]}" target="_blank" rel="noopener">${e(m[1])}</a>:<span class="c">${e(m[3])}</span></div>`;
+    if(/^#/.test(line))return `<div class="c">${e(line)}</div>`;
+    return `<div>${e(line)||'&nbsp;'}</div>`;
+  }).join('');
+}
+document.getElementById('llmgenBtn').onclick=async function(){
+  if(!LIVE){toast(T('tOffline'));return}
+  const url=document.getElementById('geoUrl').value.trim();
+  if(!url)return;
+  this.disabled=true;
+  document.getElementById('llmgenNote').textContent='scanning sitemap…';
+  const res=await api('llmgen',{url},120000);
+  this.disabled=false;
+  if(!res.ok){document.getElementById('llmgenNote').textContent='';toast('✕ '+res.error);return}
+  document.getElementById('llmgenNote').textContent='';
+  const box=document.getElementById('llmgenBox');
+  box.style.display='block';
+  box.innerHTML=renderLlmsText(res.data.text);
+  pushRun('zens-ink llms_gen '+res.data.site,'9s');
+  const a=document.createElement('a');
+  a.href=URL.createObjectURL(new Blob([res.data.text],{type:'text/plain'}));
+  a.download='llms.txt';a.textContent='↓ llms.txt';
+  a.className='gh';a.style.marginLeft='10px';
+  const note=document.getElementById('llmgenNote');
+  note.append(res.data.pages+' pages · '+res.data.sitemap.split('//')[1].split('/')[0],a);
+};
+/* content_qc */
+document.getElementById('qcBtn').onclick=async function(){
+  if(!LIVE){toast(T('tOffline'));return}
+  const text=document.getElementById('qcText').value;
+  const log=document.getElementById('qcLog'),out=document.getElementById('qcOut');
+  log.classList.add('show');log.innerHTML='<span class="dim">checking draft…</span>';
+  this.disabled=true;
+  const res=await api('qc',{text,format:document.getElementById('qcFmt').value},60000);
+  this.disabled=false;
+  if(!res.ok){log.innerHTML=`<span class="err">✕ ${res.error}</span>`;return}
+  log.innerHTML=res.log.map(l=>`<div class="${l.startsWith('✓')?'okl':l.startsWith('$')?'':'dim'}">${l}</div>`).join('');
+  const d=res.data;
+  const g=d.score>=70?'st0':d.score>=50?'st1':'st2';
+  out.innerHTML=`<div class="ckgrp open" style="margin-top:16px;border-top:1px solid var(--hair)">
+    <div class="ckgrp-h" style="cursor:default">
+      <span class="sev ${d.score>=70?'sev-info':'sev-warning'}"></span>
+      <span class="nm">${T('qcScore')}</span>
+      <span class="cnt num ${g}" style="border:0;font-size:15px">${d.score}/100</span>
+      <span class="first">${d.word_count} ${T('qcWords')} · fact ${d.fact_density} · vague ${d.vague_density}</span>
+    </div>
+    <div class="ckgrp-b" style="display:block">${d.checks.map(c=>`
+      <div class="ckrow"><span class="pth" style="flex:0 0 46%;color:${c.pass?'var(--good)':'var(--bad)'}">${c.pass?'✓':'✕'} ${esc(c.name)}</span>
+      <span class="dtl">${esc(c.detail||'')} <span style="color:var(--ink-300)">w${c.weight}</span></span></div>`).join('')}
+    </div></div>`;
+  pushRun('zens-ink content_qc','0.1s');
+};
+/* search_performance (GSC) */
+document.getElementById('gscBtn').onclick=async function(){
+  if(!LIVE){toast(T('tOffline'));return}
+  const log=document.getElementById('gscLog'),out=document.getElementById('gscOut');
+  log.classList.add('show');log.innerHTML='<span class="dim">querying Google Search Console…</span>';
+  this.disabled=true;
+  const res=await api('gsc',{},60000);
+  this.disabled=false;
+  if(!res.ok){log.innerHTML=`<span class="err">✕ ${res.error}</span>`;return}
+  log.innerHTML=res.log.map(l=>`<div class="${l.startsWith('✓')?'okl':l.startsWith('$')?'':'dim'}">${l}</div>`).join('');
+  const rows=res.data.rows||[];
+  out.innerHTML=`<div class="tblwrap"><table class="tbl"><thead><tr>
+    <th>Query</th><th>Clicks</th><th>Impr.</th><th>CTR</th><th>Pos</th></tr></thead><tbody>`+
+    rows.map(r=>{
+      const ctr=r.ctr!=null?(r.ctr*100).toFixed(1)+'%':'·';
+      const pos=r.position!=null?Math.round(r.position*10)/10:'·';
+      return `<tr><td class="kw">${esc(r.keys?r.keys[0]:r.query||'')}</td>
+        <td class="num">${r.clicks??'·'}</td><td class="num">${r.impressions??'·'}</td>
+        <td class="num">${ctr}</td><td class="num">${pos}</td></tr>`;
+    }).join('')+`</tbody></table></div>`;
+  pushRun('zens-ink search_performance --start '+res.data.start,'2s');
+};
+
+/* ================================================================
+   PRO ENGINE · 8 tools, locked until local-preview unlock
+   ================================================================ */
+const PRO={available:false,version:null,unlocked:false,tier:null};
+let LIC_MASK='';
+const PRO_TOOLS=[
+ {id:'full_audit',icon:'ph-stack',name:'Full Audit',
+  lede:{en:'One-shot orchestrator: seeds → cluster → score → gap → calendar, all 9 steps end-to-end.',zh:'一键编排器：种子词 → 聚类 → 评分 → 差距 → 日历，九步全自动。'},
+  form:[{k:'config',label:{en:'audit config (JSON)',zh:'审计配置 (JSON)'},ta:true,v:'{\n  "site_url": "https://zens.ink",\n  "site_name": "ZensInk",\n  "seed_keywords": ["seo tools for indie builders", "free keyword research"],\n  "competitors": ["https://labyrinthos.co/sitemap.xml"],\n  "lang": "en",\n  "country": "us",\n  "expand": false\n}'}]},
+ {id:'winability',icon:'ph-trophy',name:'Winability',
+  lede:{en:'Personalized difficulty: your real chances of ranking, based on your own Search Console data.',zh:'个性化难度：基于你自己 Search Console 数据的真实胜率。'},
+  form:[{k:'keyword',label:{en:'Keyword',zh:'关键词'},v:'tarot spread for self love'}]},
+ {id:'briefs',icon:'ph-notebook',name:'Content Briefs',wired:true,
+  lede:{en:'Keyword → ready-to-write brief: intent, title candidates, H2 outline from the live SERP.',zh:'关键词 → 可直接开写的 brief：意图、候选标题、来自真实 SERP 的 H2 大纲。'},
+  form:[{k:'keyword',label:{en:'Keyword',zh:'关键词'},v:'tarot spread for self love'}]},
+ {id:'content_radar',icon:'ph-calendar-check',name:'Content Radar',
+  lede:{en:'Editorial decision engine: what to write and when, with calendar assignment.',zh:'编辑决策引擎：写什么、何时写，自动排编辑日历。'},
+  form:[{k:'keywords',label:{en:'Scored keywords (one per line)',zh:'已评分关键词（每行一个）'},ta:true,ph:'tarot spread for self love\ndaily tarot pull'}]},
+ {id:'competitor_radar',icon:'ph-crosshair',name:'Competitor Radar',
+  lede:{en:'Competitive intelligence: features, pricing pages and movement of any domain.',zh:'竞争情报：任意域名的功能、定价页面与近期动向。'},
+  form:[{k:'domain',label:'Domain',v:'zens.ink'}]},
+ {id:'ai_sov',icon:'ph-chart-pie-slice',name:'AI SoV',
+  lede:{en:'AI Share of Voice: who gets cited in AI Overviews, snippets and PAA — you vs rivals.',zh:'AI 声量份额：AI Overview、精选摘要、PAA 里谁被引用 —— 你 vs 竞品。'},
+  form:[{k:'keyword',label:{en:'Keyword',zh:'关键词'},v:'free tarot reading'},{k:'brand',label:{en:'Your brand',zh:'你的品牌'},v:'ZensInk'},{k:'competitors',label:{en:'Competitors (comma)',zh:'竞品（逗号分隔）'},ph:'Ahrefs, Semrush'}]},
+ {id:'geo_visibility',icon:'ph-eye',name:'GEO Visibility',
+  lede:{en:'Does AI mention your brand when users ask for recommendations? GEO visibility check.',zh:'用户让 AI 推荐时提到你了吗？GEO 可见性检查。'},
+  form:[{k:'brand',label:{en:'Your brand',zh:'你的品牌'},v:'ZensInk'},{k:'category',label:{en:'Category',zh:'品类'},v:'SEO tools'},{k:'competitors',label:{en:'Competitors (comma)',zh:'竞品（逗号分隔）'},ph:'Ahrefs, Semrush'}]},
+ {id:'gap_deep',icon:'ph-intersect',name:'Gap Deep',
+  lede:{en:'Deep competitor analysis: categories, languages, depth and honest content gaps.',zh:'深度竞品分析：类目、语言、内容深度与真实缺口。'},
+  form:[{k:'url',label:'Sitemap URL',v:'https://zens.ink/sitemap.xml'}]},
+];
+function buildProUI(){
+  const nav=document.getElementById('nav');
+  const tpl=document.createElement('template');
+  tpl.innerHTML=`<div class="nav-label"><span data-i18n="navPro">Pro engine</span> <span class="prochip" id="prochip">PRO</span></div>`+
+    PRO_TOOLS.map(t=>`
+    <a data-view="pro-${t.id}" class="pro-item pro-locked">
+      <span class="tick"></span><i class="ph ${t.icon} ic"></i><span>${t.name}</span>
+      <i class="ph ph-lock lock"></i>
+    </a>`).join('');
+  const sysLabel=[...nav.querySelectorAll('.nav-label')].find(l=>l.dataset.i18n==='navSys');
+  sysLabel.parentElement.insertBefore(tpl.content,sysLabel);
+  const content=document.querySelector('.content');
+  const foot=document.querySelector('.footnote');
+  PRO_TOOLS.forEach(t=>{
+    VIEW_META['pro-'+t.id]={cli:'zens_ink_pro.'+toolCli[t.id],title:t.name};
+    const sec=document.createElement('section');
+    sec.className='view';sec.id='view-pro-'+t.id;
+    sec.innerHTML=`
+      <div class="kicker">${toolCli[t.id]} · pro</div>
+      <div class="lede" data-prolede="${t.id}"></div>
+      <div class="unlock-card" id="unlock-${t.id}">
+        <i class="ph-light ph-lock-key-open big"></i>
+        <div class="t">${t.name}</div>
+        <div class="d">${T('proLockedDesc')}</div>
+        <div class="ver" id="prover-${t.id}"></div>
+        <div class="uk-row">
+          <input type="password" class="ukin" id="ukin-${t.id}" placeholder="${T('proKeyPh')}" autocomplete="off">
+          <button class="btn accent" data-unlock="1">${T('proUnlock')}</button>
+        </div>
+      </div>
+      <div class="pro-body" id="probody-${t.id}" style="display:none">
+        <div class="lab-bar">
+          ${t.form.map((f,ix)=>`
+          <div class="field" ${f.ta?'style="flex:1;min-width:280px"':''}>
+            <label>${f.label[LANG]||f.label.en||f.label}</label>
+            ${f.ta
+              ?`<textarea id="pin-${t.id}-${f.k}" placeholder="${f.ph||''}" style="min-height:80px">${f.v||''}</textarea>`
+              :`<input type="text" id="pin-${t.id}-${f.k}" placeholder="${f.ph||''}" value="${f.v||''}">`}
+          </div>`).join('')}
+          <button class="btn accent" id="prorun-${t.id}">${T('proRun')}</button>
+        </div>
+        <div class="rlog" id="prolog-${t.id}"></div>
+        <div id="proout-${t.id}"></div>
+      </div>`;
+    content.insertBefore(sec,foot);
+    sec.querySelector('[data-unlock]').onclick=(ev)=>unlockPro(ev.target.closest('.unlock-card'));
+    document.getElementById('prorun-'+t.id).onclick=()=>runProTool(t);
+  });
+  refreshProState();
+}
+const toolCli={full_audit:'full_audit',winability:'winability',briefs:'content_briefs',
+  content_radar:'content_radar',competitor_radar:'competitor_radar',ai_sov:'ai_sov',
+  geo_visibility:'geo_visibility',gap_deep:'gap_deep'};
+async function unlockPro(card){
+  const inp=card&&card.querySelector('.ukin');
+  const key=(inp&&inp.value||'').trim();
+  if(!key){toast(T('proKeyPh'));if(inp)inp.focus();return}
+  const btn=card.querySelector('[data-unlock]');
+  btn.disabled=true;
+  const res=await api('pro_unlock',{key},25000);
+  btn.disabled=false;
+  if(res&&res.ok){
+    PRO.unlocked=true;PRO.tier=res.data.tier;LIC_MASK=res.data.mask||'';
+    refreshProState();refreshLicPanel();
+    toast(T('proUnlocked')+' · '+res.data.tier);
+  }else{
+    toast((res&&res.error)||'verify failed');
+  }
+}
+function refreshProState(){
+  document.querySelectorAll('[data-prolede]').forEach(el=>{
+    const t=PRO_TOOLS.find(x=>x.id===el.getAttribute('data-prolede'));
+    if(t)el.textContent=t.lede[LANG]||t.lede.en;
+  });
+  PRO_TOOLS.forEach(t=>{
+    const gate=document.getElementById('unlock-'+t.id);
+    const body=document.getElementById('probody-'+t.id);
+    if(!gate||!body)return;
+    const ver=document.getElementById('prover-'+t.id);
+    const btn=gate.querySelector('[data-unlock]');
+    if(PRO.unlocked&&PRO.available){
+      gate.style.display='none';body.style.display='block';
+    }else if(!PRO.available){
+      gate.style.display='block';body.style.display='none';
+      btn.style.display='none';
+      if(ver)ver.innerHTML=`<span class="st2">${T('proMissing')}</span>`;
+    }else{
+      gate.style.display='block';body.style.display='none';
+      btn.style.display='inline-flex';
+      if(ver)ver.textContent=T('proVer')+' zens_ink_pro '+PRO.version;
+    }
+  });
+  const chip=document.getElementById('prochip');
+  if(chip)chip.textContent=(PRO.unlocked&&PRO.tier)?('PRO · '+PRO.tier):'PRO';
+  document.querySelectorAll('.nav a.pro-item').forEach(a=>{
+    const locked=!(PRO.unlocked&&PRO.available);
+    a.classList.toggle('pro-locked',locked);
+    const ic=a.querySelector('.lock');
+    if(ic)ic.className='ph lock '+(locked?'ph-lock':'ph-lock-simple-open open');
+  });
+}
+async function runProTool(t){
+  if(!(PRO.unlocked&&PRO.available)){toast(T('proLockedDesc'));return}
+  const log=document.getElementById('prolog-'+t.id),out=document.getElementById('proout-'+t.id);
+  const val=k=>((document.getElementById('pin-'+t.id+'-'+k)||{}).value||'').trim();
+  const comma=k=>val(k)?val(k).split(',').map(x=>x.trim()).filter(Boolean):[];
+  const paint=(res,fn)=>{
+    if(res.ok){log.classList.add('show');log.innerHTML=res.log.map(l=>`<div class="${l.startsWith('$')?'':'dim'}">${esc(l)}</div>`).join('');fn(res.data,out)}
+    else{log.classList.add('show');log.innerHTML=`<span class="err">✕ ${esc(res.error)}</span>`}
+  };
+  const btn=document.getElementById('prorun-'+t.id);
+  btn.disabled=true;
+  try{
+    if(t.id==='briefs'){
+      if(!val('keyword')){toast(T('kwSeed'));return}
+      const res=await api('pro_brief',{keyword:val('keyword')},90000);
+      paint(res,(d,o)=>{renderBrief(d,o);pushRun('zens_ink_pro content_briefs',(d._elapsed||1)+'s')});
+    }
+    else if(t.id==='gapdeep'){
+      if(!val('url'))return;
+      const res=await api('pro_gapdeep',{url:val('url')},120000);
+      paint(res,renderGapDeep);
+    }
+    else if(t.id==='winability'){
+      if(!val('keyword')){toast(T('kwSeed'));return}
+      const res=await api('pro_win',{keyword:val('keyword')},120000);
+      paint(res,renderWin);
+    }
+    else if(t.id==='content_radar'){
+      const kws=val('keywords').split(/[\n,]/).map(x=>x.trim()).filter(Boolean);
+      if(!kws.length){toast(T('kwSeed'));return}
+      const res=await api('pro_radar',{keywords:kws},300000);
+      paint(res,renderRadar);
+    }
+    else if(t.id==='ai_sov'){
+      const kws=val('keyword').split(/[\n,]/).map(x=>x.trim()).filter(Boolean).slice(0,6);
+      if(!kws.length||!val('brand')){toast(T('kwSeed'));return}
+      const res=await api('pro_sov',{keywords:kws,brand:val('brand'),competitors:comma('competitors')},240000);
+      paint(res,renderSov);
+    }
+    else if(t.id==='competitor_radar'){
+      if(!val('domain'))return;
+      const res=await api('pro_cradar',{domain:val('domain')},120000);
+      paint(res,renderCradar);
+    }
+    else if(t.id==='geo_visibility'){
+      if(!val('brand')||!val('category')){toast(T('kwSeed'));return}
+      log.classList.add('show');log.innerHTML='<span class="dim">asking the LLM real user questions · up to ~4 min…</span>';
+      const res=await api('pro_geo',{brand:val('brand'),category:val('category'),competitors:comma('competitors')},310000);
+      paint(res,renderGeoRep);
+    }
+    else if(t.id==='full_audit'){
+      let cfg;
+      try{cfg=JSON.parse(val('config'))}catch(e){toast('✕ config JSON: '+e.message);return}
+      log.classList.add('show');log.innerHTML='<span class="dim">starting 12-step pipeline…</span>';
+      const res=await api('pro_fullaudit',{config:cfg},30000);
+      if(!res.ok){log.innerHTML=`<span class="err">✕ ${esc(res.error)}</span>`;return}
+      pollJob(res.data.job,log,out,btn);
+      return; // keep button disabled while polling
+    }
+  } finally { btn.disabled=false; }
+}
+function pollJob(jid,log,out,btn){
+  const timer=setInterval(async()=>{
+    const r=await api('pro_job',{id:jid},15000);
+    if(!r.ok){clearInterval(timer);btn.disabled=false;log.innerHTML+=`<span class="err">✕ ${esc(r.error)}</span>`;return}
+    const d=r.data;
+    log.innerHTML=d.log.map(l=>`<div class="${l.startsWith('$')?'':'dim'}">${esc(l)}</div>`).join('');
+    log.scrollTop=log.scrollHeight;
+    if(d.done){
+      clearInterval(timer);btn.disabled=false;
+      const ok=d.exit===0;
+      out.innerHTML=`
+        <div class="ckgrp open" style="margin-top:16px;border-top:1px solid var(--hair)">
+          <div class="ckgrp-h" style="cursor:default">
+            <span class="sev ${ok?'sev-info':'sev-error'}"></span>
+            <span class="nm">${ok?'pipeline finished':'pipeline exited with code '+d.exit}</span>
+            ${d.artifacts&&d.artifacts.length?'<span class="cnt">audit-output/</span>':''}
+          </div>
+          <div class="ckgrp-b" style="display:block">
+            ${(d.artifacts||[]).map(a=>`<div class="ckrow"><span class="pth"><a class="gh" href="/audit-output/${encodeURIComponent(a)}" target="_blank" rel="noopener">${esc(a)}</a></span><span class="dtl">zensink-webui/audit-output/${esc(a)}</span></div>`).join('')||'<span class="mx-tip">no artifacts</span>'}
+          </div>
+        </div>`;
+      pushRun('zens_ink_pro full_audit (12 steps)','done');
+    }
+  },2500);
+}
+/* ── pro renderers ── */
+function pairTable(list,cap){
+  const rows=(Array.isArray(list)?list:Object.entries(list||{})).slice(0,12).map(x=>{
+    const k=Array.isArray(x)?x[0]:(x.category||x.name||x.lang||x.depth||String(x));
+    const v=Array.isArray(x)?x[1]:((x.count||x.pages||x.total)??'');
+    return `<tr><td class="kw">${esc(String(k))}</td><td class="num">${esc(String(v))}</td></tr>`;
+  }).join('');
+  return rows?`<div class="panel-h"><span>${cap}</span></div><table class="tbl"><tbody>${rows}</tbody></table>`:'';
+}
+function renderGapDeep(d,out){
+  const cats=Array.isArray(d.categories)?d.categories:Object.entries(d.categories||{});
+  const langs=Array.isArray(d.languages)?d.languages:Object.entries(d.languages||{});
+  out.innerHTML=`
+    <div class="audit-top" style="margin-top:22px">
+      <div class="audit-stats" style="border-left:0;padding-left:0;margin-left:0">
+        <div class="as"><b>${d.total_pages||'·'}</b><span>pages</span></div>
+        <div class="as"><b>${cats.length}</b><span>categories</span></div>
+        <div class="as"><b>${langs.length}</b><span>languages</span></div>
+      </div>
+    </div>
+    ${pairTable(d.languages,'languages')}
+    ${pairTable(d.categories,'content categories')}
+    ${d.url_depth?pairTable(d.url_depth,'url depth distribution'):''}
+    ${d.patterns&&d.patterns.length?`<div class="panel-h"><span>url patterns</span></div><div class="cl-kws">${(Array.isArray(d.patterns)?d.patterns:[]).slice(0,10).map(p=>{const k=Array.isArray(p)?p[0]:(p.pattern||p.name||p);return `<span class="chip">${esc(String(k))}</span>`}).join('')}</div>`:''}`;
+}
+function renderWin(d,out){
+  const w=d.win||{};
+  const notes=Object.entries(w).filter(([k,v])=>typeof v==='string'&&v.length>20);
+  const rid='winring-'+Math.round(Math.random()*1e5);
+  out.innerHTML=`
+    <div class="audit-top" style="margin-top:22px">
+      <div class="ring"><svg width="112" height="112"><circle class="rc" cx="56" cy="56" r="48"/><circle class="rv" cx="56" cy="56" r="48" stroke-dasharray="301.6" stroke-dashoffset="301.6" id="${rid}"/></svg>
+      <div class="rn"><b>${w.score??'·'}</b><span>/100</span></div></div>
+      <div class="audit-stats">
+        <div class="as"><b>${esc(w.verdict||'·')}</b><span>verdict</span></div>
+        <div class="as"><b>${(d.kd||{}).kd??'·'}</b><span>generic kd</span></div>
+        <div class="as"><b>${esc(String((d.profile||{}).tier||'·'))}</b><span>your tier</span></div>
+        <div class="as"><b>${(d.profile||{}).authority??'·'}</b><span>authority</span></div>
+      </div>
+    </div>
+    ${notes.map(([,v])=>`<p class="dr-note" style="margin-top:14px">${esc(v)}</p>`).join('')}`;
+  requestAnimationFrame(()=>{const el=document.getElementById(rid);if(el){const C=2*Math.PI*48;el.style.strokeDashoffset=C*(1-(w.score||0)/100)}});
+}
+const VCHIP={GO:'info',GO_NOW:'info',CAUTION:'comm',WAIT:'nav',AVOID:'nav'};
+function renderRadar(d,out){
+  const q=d.queue||[];
+  out.innerHTML=`
+    <div class="panel-h"><span>content queue · ${q.length} briefs</span></div>
+    <div class="tblwrap"><table class="tbl"><thead><tr>
+      <th>Verdict</th><th>Keyword</th><th>KD</th><th>Win</th><th>${T('thVol')}</th><th>Title</th></tr></thead><tbody>
+    ${q.slice(0,15).map(b=>`<tr>
+      <td><span class="chip ${VCHIP[b.verdict]||'nav'}">${esc(b.verdict||'·')}</span></td>
+      <td class="kw">${esc(b.keyword||'')}</td>
+      <td class="num ${kdClass(b.kd)}">${b.kd??'·'}</td>
+      <td class="num">${b.winability??'·'}</td>
+      <td class="num">${b.search_volume??'·'}</td>
+      <td style="font-size:12.5px;color:var(--ink-500);max-width:280px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${esc(b.suggested_title||'')}">${esc(b.suggested_title||'·')}</td>
+    </tr>`).join('')}</tbody></table></div>
+    ${(d.calendar||[]).length?`<div class="panel-h"><span>editorial calendar</span></div>`+
+      d.calendar.map(wk=>`<div class="cl"><div class="cl-h"><h3>Week ${wk.week}</h3></div>
+      <div class="cl-kws">${(wk.items||wk.briefs||[]).map(it=>`<span class="chip ${VCHIP[it.verdict]||'nav'}">${esc(it.keyword||it.suggested_title||'')}</span>`).join('')||'<span class="mx-tip">·</span>'}</div></div>`).join(''):''}`;
+}
+function renderSov(d,out){
+  const a=d.agg||{};
+  const mods=Object.entries(a.module_presence||{}).filter(([,v])=>v&&(v.count||0)>0);
+  const brands=Object.entries(a.brands||{});
+  const mv=a.mine_vs_competitors||{};
+  out.innerHTML=`
+    <div class="audit-top" style="margin-top:22px">
+      <div class="audit-stats" style="border-left:0;padding-left:0;margin-left:0">
+        <div class="as"><b>${mv.mine_sov_pct??0}%</b><span>your AI SoV</span></div>
+        <div class="as"><b>${mv.mine_mentions??0}</b><span>your mentions</span></div>
+        <div class="as"><b>${a.keywords_checked??'·'}</b><span>keywords</span></div>
+      </div>
+    </div>
+    ${mods.length?`<div class="panel-h"><span>AI modules present in SERP</span></div><div class="cl-kws">
+      ${mods.map(([k,v])=>`<span class="chip">${esc(k)}<b>${v.pct}%</b></span>`).join('')}</div>`:''}
+    ${brands.length?`<div class="panel-h"><span>brand citation tally</span></div>
+    <table class="tbl"><thead><tr><th>Brand</th><th>Mentions</th></tr></thead><tbody>
+    ${brands.map(([b,v])=>`<tr><td class="kw">${esc(b)}</td><td class="num">${(v||{}).total??0}</td></tr>`).join('')}
+    </tbody></table>`:''}`;
+}
+function renderCradar(d,out){
+  const comps=d.competitors||[];
+  out.innerHTML=`
+    <div class="panel-h"><span>discovered competitors · ${comps.length}</span></div>
+    <div class="tblwrap"><table class="tbl"><thead><tr><th>#</th><th>Domain</th><th>Source query</th></tr></thead><tbody>
+    ${comps.map((c,i)=>`<tr>
+      <td class="num">${i+1}</td>
+      <td class="kw">${esc(c.domain||c.name||c.title||String(c))}</td>
+      <td class="num" style="color:var(--ink-500)">${esc(c.query||c.source_query||c.source||'·')}</td>
+    </tr>`).join('')||'<tr><td colspan="3" style="color:var(--ink-500)">no competitors returned</td></tr>'}
+    </tbody></table></div>`;
+}
+function renderGeoRep(d,out){
+  const rate=d.mention_rate!=null?(typeof d.mention_rate==='string'?d.mention_rate:Math.round(d.mention_rate*100)+'%'):'·';
+  out.innerHTML=`
+    <div class="audit-top" style="margin-top:22px">
+      <div class="audit-stats" style="border-left:0;padding-left:0;margin-left:0">
+        <div class="as"><b>${rate}</b><span>mention rate</span></div>
+        <div class="as"><b>${d.avg_rank??d.average_rank??'·'}</b><span>avg rank when cited</span></div>
+        <div class="as"><b>${d.total_questions??d.total??'·'}</b><span>questions asked</span></div>
+      </div>
+    </div>
+    ${(d.insights||[]).length?`<div class="panel-h"><span>insights</span></div><ul style="list-style:none">
+      ${d.insights.map(i=>`<li class="note-li">${esc(typeof i==='string'?i:JSON.stringify(i))}</li>`).join('')}</ul>`:''}
+    ${(d.per_question||d.questions||[]).length?`<div class="panel-h"><span>per-question results</span></div>
+      ${(d.per_question||d.questions).slice(0,10).map(q=>`<div class="ckrow"><span class="pth" style="flex:0 0 46%">${esc(q.question||q.q||'')}</span>
+      <span class="dtl">${q.brand_mentioned?'<span class="st0">✓ mentioned</span>':'<span class="st2">✕ not mentioned</span>'}${q.rank?' · rank '+q.rank:''}</span></div>`).join('')}`:''}`;
+}
+function renderBrief(d,out){
+  const titles=(d.titles||[]).map(t=>`<li>${esc(typeof t==='string'?t:(t.title||t.text||''))}</li>`).join('');
+  const outline=(d.outline||[]).map(o=>`<li>${esc(typeof o==='string'?o:(o.heading||o.h2||o.text||''))}</li>`).join('');
+  out.innerHTML=`
+    <div class="audit-top" style="margin-top:22px">
+      <div class="audit-stats" style="border-left:0;padding-left:0;margin-left:0">
+        <div class="as"><b>${esc(d.intent||'·')}</b><span>intent</span></div>
+        <div class="as"><b>${esc(d.recommended_page_type||'·')}</b><span>page type</span></div>
+        ${d.suggested_wordcount?`<div class="as"><b>${d.suggested_wordcount}</b><span>words</span></div>`:''}
+      </div>
+    </div>
+    ${titles?`<div class="panel-h"><span>title candidates</span></div><ol class="brief-titles">${titles}</ol>`:''}
+    ${outline?`<div class="panel-h"><span>H2 outline · from live SERP</span></div><ul class="brief-outline">${outline}</ul>`:''}
+    ${(d.entities&&d.entities.length)?`<div class="panel-h"><span>entities</span></div><div class="cl-kws">${d.entities.slice(0,16).map(e=>`<span class="chip">${esc(typeof e==='string'?e:(e.name||e.entity||''))}</span>`).join('')}</div>`:''}
+    ${(d.paa_questions&&d.paa_questions.length)?`<div class="panel-h"><span>PAA questions</span></div><ul class="brief-outline">${d.paa_questions.slice(0,8).map(q=>`<li>${esc(typeof q==='string'?q:(q.question||q.text||''))}</li>`).join('')}</ul>`:''}`;
+}
+buildProUI();
+
+/* ================================================================
+   SETTINGS — manage .env API keys (writes via server, hot-applies)
+   ================================================================ */
+/* key list comes from the server (status/keys) — never hardcoded here */
+const KEY_PREF=['serper','bing','brave','ahrefs','gsc'];
+function keyOrderOf(keys){
+  const ks=Object.keys(keys||{});
+  return [...KEY_PREF.filter(k=>ks.includes(k)),...ks.filter(k=>!KEY_PREF.includes(k))];
+}
+function renderKeyChips(){
+  const row=document.getElementById('keyrow');
+  if(!row)return;
+  if(!LIVE){row.innerHTML='';return}
+  row.innerHTML=keyOrderOf(KEYS).map(k=>
+    `<span class="keychip${KEYS[k]?' on':''}" data-key="${k}" title="${k}">${k}</span>`).join('');
+}
+let KEY_DOCS_CACHE={},ENV_PATH_CACHE='';
+function renderSettings(data){
+  const grid=document.getElementById('setGrid');
+  document.getElementById('setEnvPath').textContent=data.env_path||ENV_PATH_CACHE||'';
+  grid.innerHTML=keyOrderOf(data.keys).map(k=>{
+    const st=(data.keys||{})[k]||{set:false},doc=(data.docs||{})[k]||{};
+    return `<div class="keyrow-set" data-k="${k}">
+      <div class="kr-head">
+        <span class="kr-name">${k.toUpperCase()}</span>
+        <span class="chip ${st.set?'info':''}" id="st-${k}">${st.set?('✓ '+st.masked):T('setNotSet')}</span>
+      </div>
+      <div class="kr-doc">${T('setUnlocks')}: <span class="mono">${doc.tools||''}</span>${doc.url?` · <a class="gh" href="${doc.url}" target="_blank" rel="noopener">${T('setGetKey')} ↗</a>`:''}${doc.tier?` <span style="color:var(--ink-300)">(${doc.tier})</span>`:''}</div>
+      <div class="kr-in">
+        <input type="password" class="kr-input" id="in-${k}" data-k="${k}" placeholder="${st.set?T('setReplacePh'):T('setPastePh')}" autocomplete="off" spellcheck="false">
+        <button class="btn ghost sm kr-eye" data-eye="${k}" title="show / hide"><i class="ph ph-eye"></i></button>
+        ${st.set?`<button class="btn ghost sm" data-clear="${k}">${T('setClear')}</button>`:''}
+      </div>
+    </div>`;
+  }).join('');
+}
+async function loadKeys(){
+  if(!LIVE){
+    document.getElementById('setGrid').innerHTML=`<p class="dr-note st1" style="margin-top:14px">${T('setOffline')}</p>`;
+    return;
+  }
+  const r=await api('keys');
+  if(r.ok){KEY_DOCS_CACHE=r.docs||{};ENV_PATH_CACHE=r.env_path||'';renderSettings(r)}
+}
+function applyKeyState(booleans){
+  if(booleans)KEYS=Object.assign({},KEYS,booleans);
+  renderKeyChips();
+}
+async function saveKeys(payload,btn){
+  if(btn)btn.disabled=true;
+  const r=await api('keys',payload);
+  if(btn)btn.disabled=false;
+  const log=document.getElementById('setLog');
+  if(r.ok){
+    log.classList.add('show');
+    log.innerHTML=r.log.map(l=>`<div class="${l.startsWith('✓')?'okl':l.startsWith('$')?'':'dim'}">${l}</div>`).join('');
+    applyKeyState(Object.fromEntries(Object.entries(r.keys||{}).map(([k,v])=>[k,v.set])));
+    renderSettings({keys:r.keys,docs:KEY_DOCS_CACHE,env_path:ENV_PATH_CACHE});
+    toast(T('setSaved'));
+    pushRun('zens-ink config · .env','0.0s');
+  }else{
+    log.classList.add('show');
+    log.innerHTML=`<span class="err">✕ ${r.error}</span>`;
+  }
+}
+document.getElementById('setGrid').addEventListener('click',e=>{
+  const eye=e.target.closest('[data-eye]');
+  if(eye){
+    const inp=document.getElementById('in-'+eye.dataset.eye);
+    const show=inp.type==='password';
+    inp.type=show?'text':'password';
+    eye.querySelector('i').className='ph '+(show?'ph-eye-slash':'ph-eye');
+    return;
+  }
+  const clr=e.target.closest('[data-clear]');
+  if(clr)saveKeys({[clr.dataset.clear]:''},clr);
+});
+document.getElementById('saveKeysBtn').addEventListener('click',function(){
+  const payload={};
+  document.querySelectorAll('#setGrid .kr-input').forEach(inp=>{
+    const v=inp.value.trim();
+    if(v)payload[inp.dataset.k]=v;
+  });
+  if(!Object.keys(payload).length){toast(T('setPastePh'));return}
+  saveKeys(payload,this);
+});
+document.getElementById('keyrow').addEventListener('click',e=>{
+  if(e.target.classList.contains('keychip'))setView('settings');
+});
+
+/* ================================================================
+   BOOT · detect live engine
+   ================================================================ */
+function refreshLicPanel(){
+  const st=document.getElementById('licState');if(!st)return;
+  const rm=document.getElementById('licRemove'),un=document.getElementById('licUnlock'),inp=document.getElementById('licKey');
+  if(PRO.unlocked){
+    st.textContent=T('setProOn')+' · '+(PRO.tier||'')+(LIC_MASK?(' · '+LIC_MASK):'');
+    if(rm)rm.style.display='inline-flex';if(un)un.style.display='none';if(inp)inp.style.display='none';
+  }else{
+    st.textContent=T('setProOff');
+    if(rm)rm.style.display='none';if(un)un.style.display='inline-flex';if(inp)inp.style.display='';
+  }
+}
+document.getElementById('licUnlock').onclick=async()=>{
+  const key=(document.getElementById('licKey').value||'').trim();
+  if(!key){toast(T('proKeyPh'));return}
+  const btn=document.getElementById('licUnlock');btn.disabled=true;
+  const res=await api('pro_unlock',{key},25000);
+  btn.disabled=false;
+  if(res&&res.ok){
+    PRO.unlocked=true;PRO.tier=res.data.tier;LIC_MASK=res.data.mask||'';
+    refreshProState();refreshLicPanel();
+    toast(T('proUnlocked')+' · '+res.data.tier);
+  }else{
+    toast((res&&res.error)||'verify failed');
+  }
+};
+document.getElementById('licRemove').onclick=async()=>{
+  const res=await api('pro_lock',{},8000);
+  if(res&&res.ok){
+    PRO.unlocked=false;PRO.tier=null;LIC_MASK='';
+    refreshProState();refreshLicPanel();toast(T('setProOff'));
+  }
+};
+(async function boot(){
+  refreshStats();
+  const res=await api('status',null,2500);
+  if(res&&res.ok&&res.engine){
+    LIVE=true;KEYS=res.keys;
+    if(res.pro){PRO.available=!!res.pro.available;PRO.version=res.pro.version}
+    if(res.license){PRO.unlocked=!!res.license.unlocked;PRO.tier=res.license.tier||null;LIC_MASK=res.license.mask||''}
+    renderKeyChips();
+    refreshProState();refreshLicPanel();
+    document.getElementById('badgeLive').style.display='inline-flex';
+    document.getElementById('badgeDemo').style.display='none';
+    document.getElementById('badgeLiveTxt').textContent='LIVE v'+res.version;
+    document.getElementById('verLine').textContent='zens-ink '+res.version+' · webui '+(res.webui||'')+' · live';
+    document.getElementById('fnMode').textContent=T('fnLive');
+    toast(T('tConn')+res.version);
+    /* warm the dashboard with a real geo audit of zens.ink */
+    api('geo',{url:'https://zens.ink'},30000).then(r=>{
+      if(r.ok){STATS.geo=r.data.score;refreshStats()}
+    });
+    loadKeys();
+  }else{
+    document.getElementById('verLine').textContent='zens-ink · offline demo';
+    document.getElementById('fnMode').textContent=T('fnOffline');
+  }
+})();
+</script>
+</body>
+</html>

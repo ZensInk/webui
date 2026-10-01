@@ -1,0 +1,5 @@
+__pycache__/
+audit-output/
+.npmrc
+*.pid
+node_modules/
