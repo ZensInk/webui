@@ -11,7 +11,7 @@ GEO/AI readiness, rank tracking — plus the 8 Pro tools behind a real
 license check. The backend is the actual Python package (pure stdlib),
 not a mock.
 
-![ZensInk WebUI](og.png)
+![ZensInk WebUI](https://raw.githubusercontent.com/ZensInk/webui/main/og.png)
 
 ## Quick start
 
