@@ -2,6 +2,7 @@
 
 **npm:** [`@zensink/webui`](https://www.npmjs.com/package/@zensink/webui) ·
 **GitHub:** [ZensInk/webui](https://github.com/ZensInk/webui) ·
+**Engine on PyPI:** [`zens-ink`](https://pypi.org/project/zens-ink/) ·
 **Site:** [zens.ink](https://zens.ink)
 
 The [zens-ink](https://zens.ink) SEO toolkit as a local web console. One page,
@@ -10,7 +11,7 @@ GEO/AI readiness, rank tracking — plus the 8 Pro tools behind a real
 license check. The backend is the actual Python package (pure stdlib),
 not a mock.
 
-![ZensInk](https://zens.ink/og.png)
+![ZensInk WebUI](og.png)
 
 ## Quick start
 
