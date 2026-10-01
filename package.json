@@ -1,5 +1,5 @@
 {
-  "name": "@zensink/webui",
+  "name": "zensink-webui",
   "version": "0.1.0",
   "description": "Web console for the zens-ink SEO toolkit \u2014 the same pure-Python engine as the CLI, now with buttons. Zero npm dependencies.",
   "license": "MIT",
