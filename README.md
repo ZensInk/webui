@@ -1,6 +1,6 @@
 # ZensInk WebUI
 
-**npm:** [`@zensink/webui`](https://www.npmjs.com/package/zensink-webui) ·
+**npm:** [`@zensink/webui`](https://www.npmjs.com/package/@zensink/webui) ·
 **GitHub:** [ZensInk/webui](https://github.com/ZensInk/webui) ·
 **Site:** [zens.ink](https://zens.ink)
 
