@@ -22,4 +22,19 @@ jobs:
       - run: node --check bin/zensink-webui.js
       - run: python3 -c "import ast; ast.parse(open('server.py').read())"
       - run: npm install -g npm@latest
-      - run: npm stage publish --access public
+      - name: Debug OIDC claims
+        run: |
+          node -e "
+            const c = process.env.ACTIONS_ID_TOKEN_REQUEST_TOKEN;
+            const u = process.env.ACTIONS_ID_TOKEN_REQUEST_URL;
+            if (!c || !u) { console.log('NO OIDC ENV — id-token permission missing?'); process.exit(0); }
+            fetch(u + '&audience=' + encodeURIComponent('npm:registry.npmjs.org'), { headers: { Authorization: 'Bearer ' + c } })
+              .then(r => r.json())
+              .then(j => {
+                const p = JSON.parse(Buffer.from(j.value.split('.')[1], 'base64').toString());
+                console.log(JSON.stringify({ aud: p.aud, sub: p.sub, repo: p.repository, wf: p.workflow, ref: p.ref, ev: p.event_name }, null, 2));
+              })
+              .catch(e => { console.log('OIDC REQUEST FAILED:', e.message); process.exit(0); });
+          "
+      - run: npm --version
+      - run: npm stage publish --access public --loglevel silly
